@@ -1,0 +1,6 @@
+dist
+node_modules
+package-lock.json
+lab
+# The scrollcraft runtime is vendored, never edited, and never reformatted.
+src/engine

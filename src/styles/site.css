@@ -1,0 +1,2705 @@
+/* ============================================================================
+   The Naghiyev Observer: the page's own styles.
+   A broadsheet printed about the sky. Newsprint and ink for the paper, black
+   plates for the photographs, one red for the sub-editor's pencil.
+   The engine and its taste floor live in engine/scrollcraft.css. Nothing here
+   restyles a device; this is markup that belongs to this page alone.
+   ========================================================================== */
+
+@property --sc-p {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@property --ob-t {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+/* ------------------------------------------------------------- the brand -- */
+:root {
+  --np-paper: #f2ede2;
+  --np-paper-deep: #e8e1d2;
+  --np-ink: #15130f;
+  --np-ink-soft: #5a5348;
+  --np-red: #b2301c;
+  --np-night: #0d0c0a;
+  --np-night-ink: #efe9dc;
+  --np-night-soft: #a69e8f;
+
+  --sc-canvas: var(--np-paper);
+  --sc-surface: var(--np-paper-deep);
+  --sc-ink: var(--np-ink);
+  --sc-ink-soft: var(--np-ink-soft);
+  --sc-accent: var(--np-red);
+  --sc-accent-ink: var(--np-paper);
+
+  --np-display: 'Libre Caslon Display', 'Libre Caslon Text', Georgia, serif;
+  --np-text: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+  --np-label: 'Libre Franklin', 'Franklin Gothic Medium', system-ui, sans-serif;
+  --np-black: 'UnifrakturMaguntia', 'Libre Caslon Display', serif;
+
+  --sc-font-display: var(--np-display);
+  --sc-font-text: var(--np-text);
+  --sc-font-mono: var(--np-label);
+
+  --np-maxw: 86rem;
+  --np-rule: 1px solid var(--np-ink);
+  --np-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --np-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  color-scheme: light;
+}
+
+html {
+  scroll-padding-top: 4.5rem;
+}
+body {
+  background: var(--np-paper);
+  color: var(--np-ink);
+  font-family: var(--np-text);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+::selection {
+  background: var(--np-red);
+  color: var(--np-paper);
+}
+
+.ob {
+  position: relative;
+}
+.ob main {
+  position: relative;
+  z-index: 1;
+}
+.ob-skip {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  background: var(--np-ink);
+  color: var(--np-paper);
+  font-family: var(--np-label);
+  font-size: 0.8rem;
+}
+.ob-skip:focus {
+  top: 1rem;
+}
+
+.np-wrap {
+  width: 100%;
+  max-width: var(--np-maxw);
+  margin-inline: auto;
+  padding-inline: var(--sc-gutter);
+}
+
+/* ------------------------------------------------- ground: sky and paper -- */
+/* The star field is printed onto the newsprint. It sits under everything, so
+   the night sheets simply cover it. */
+.ob-sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.ob-sky canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* Paper tooth: fixed, so it costs one layer and never repaints on scroll. */
+.np-paper {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.37  0 0 0 0 0.3  0 0 0 0.28 0'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+}
+
+/* --------------------------------------------------------------- type kit -- */
+.np-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin: 0;
+  font-family: var(--np-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+}
+.np-kicker__red {
+  color: var(--np-red);
+}
+.np-kicker--paper {
+  color: var(--np-night-soft);
+}
+.np-kicker--paper .np-kicker__red {
+  color: #e2603f;
+}
+
+.np-h2 {
+  margin: 0;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(2.4rem, 1.6rem + 3vw, 4.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+}
+
+.np-copy {
+  font-size: clamp(0.98rem, 0.94rem + 0.18vw, 1.08rem);
+  line-height: 1.58;
+  text-align: justify;
+  hyphens: auto;
+  text-wrap: pretty;
+}
+.np-copy p {
+  margin: 0;
+}
+.np-copy p + p {
+  margin-top: 0.85em;
+  text-indent: 1.4em;
+}
+.np-copy--drop > p:first-child::first-letter {
+  float: left;
+  font-family: var(--np-display);
+  font-size: 4.3em;
+  line-height: 0.78;
+  padding: 0.07em 0.09em 0 0;
+  color: var(--np-red);
+}
+
+.np-deck {
+  margin: 0;
+  max-width: 36ch;
+  padding-left: 1.1rem;
+  border-left: 3px solid var(--np-ink);
+  font-style: italic;
+  font-size: clamp(1.2rem, 1rem + 0.8vw, 1.65rem);
+  line-height: 1.32;
+  text-wrap: pretty;
+}
+.np-deck--plain {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.np-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+  transition:
+    text-decoration-color 300ms var(--np-ease-out),
+    color 300ms var(--np-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-link:hover {
+    color: var(--np-red);
+    text-decoration-color: var(--np-red);
+  }
+}
+
+/* buttons: set in Franklin caps, square as a ruled box */
+.np-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 2.9rem;
+  padding: 0.8rem 1.35rem;
+  border: 1.5px solid var(--np-ink);
+  background: transparent;
+  color: var(--np-ink);
+  font-family: var(--np-label);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition:
+    background-color 420ms var(--np-ease),
+    color 420ms var(--np-ease),
+    border-color 420ms var(--np-ease),
+    transform 160ms var(--np-ease-out);
+}
+.np-btn span {
+  display: inline-block;
+  transition: transform 520ms var(--np-ease);
+}
+.np-btn--ink {
+  background: var(--np-ink);
+  color: var(--np-paper);
+}
+.np-btn--sm {
+  min-height: 2.2rem;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.66rem;
+}
+.np-btn--lg {
+  min-height: 3.6rem;
+  padding: 1rem 1.8rem;
+  font-size: 0.82rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-btn:hover {
+    background: var(--np-red);
+    border-color: var(--np-red);
+    color: var(--np-paper);
+  }
+  .np-btn:hover span {
+    transform: translateX(0.3rem);
+  }
+}
+.np-btn:active {
+  transform: scale(0.98);
+}
+.np-btn:focus-visible,
+.np-link:focus-visible,
+.np-bar a:focus-visible {
+  outline: 2px solid var(--np-red);
+  outline-offset: 3px;
+}
+
+/* ============================================================ the masthead */
+.np-mast {
+  position: relative;
+  z-index: 1;
+  padding-top: 1.1rem;
+}
+.np-mast__ears {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: var(--np-rule);
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.np-mast__ears p {
+  margin: 0;
+}
+.np-nameplate {
+  margin: 0;
+  padding-top: clamp(0.6rem, 1.5vw, 1.4rem);
+  text-align: center;
+  font-family: var(--np-black);
+  font-weight: 400;
+  font-size: clamp(2.3rem, 0.6rem + 7.6vw, 8.4rem);
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.np-mast__motto {
+  margin: 0.25rem 0 0.9rem;
+  text-align: center;
+  font-style: italic;
+  font-size: clamp(0.92rem, 0.85rem + 0.3vw, 1.1rem);
+  color: var(--np-ink-soft);
+}
+.np-mast__dateline {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  padding: 0.55rem 0;
+  border-top: var(--np-rule);
+  border-bottom: 5px double var(--np-ink);
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ====================================================== the running head */
+.np-bar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: color-mix(in oklab, var(--np-paper) 94%, transparent);
+  border-bottom: var(--np-rule);
+  backdrop-filter: blur(6px);
+  transition:
+    background-color 500ms var(--np-ease),
+    color 500ms var(--np-ease),
+    border-color 500ms var(--np-ease);
+}
+.np-bar[data-night='true'] {
+  background: color-mix(in oklab, var(--np-night) 92%, transparent);
+  color: var(--np-night-ink);
+  border-color: color-mix(in oklab, var(--np-night-ink) 30%, transparent);
+}
+.np-bar__inner {
+  max-width: var(--np-maxw);
+  margin-inline: auto;
+  padding-inline: var(--sc-gutter);
+  min-height: 3.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+}
+.np-bar a {
+  color: inherit;
+  text-decoration: none;
+}
+.np-bar__name {
+  font-family: var(--np-black);
+  font-size: 1.3rem;
+  line-height: 1;
+  justify-self: start;
+}
+.np-bar__links {
+  display: flex;
+  gap: clamp(1rem, 2vw, 2rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.np-bar__links a {
+  position: relative;
+  font-family: var(--np-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding-block: 0.3rem;
+}
+.np-bar__links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.1rem;
+  height: 2px;
+  background: var(--np-red);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 520ms var(--np-ease);
+}
+.np-bar__links a[aria-current='true']::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-bar__links a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+.np-bar__end {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+.np-bar__folio {
+  display: flex;
+  gap: 0.7rem;
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.np-bar__sect {
+  color: var(--np-red);
+}
+.np-bar[data-night='true'] .np-bar__sect {
+  color: #e2603f;
+}
+.np-bar .np-btn--ink {
+  color: var(--np-paper);
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-bar .np-btn--ink:hover {
+    color: var(--np-paper);
+  }
+}
+.np-bar[data-night='true'] .np-btn--ink {
+  background: var(--np-night-ink);
+  color: var(--np-night);
+  border-color: var(--np-night-ink);
+}
+
+/* ============================================================ front page */
+.np-front {
+  padding-block: clamp(2rem, 4vw, 3.5rem) clamp(3rem, 6vw, 5rem);
+}
+.np-front__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1.5rem, 3vw, 3rem);
+}
+.np-lead {
+  grid-column: 1 / span 8;
+  display: grid;
+  align-content: start;
+  gap: clamp(1.1rem, 2vw, 1.6rem);
+  padding-top: 0.4rem;
+}
+.np-headline {
+  margin: 0;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(2.7rem, 1.4rem + 4.6vw, 6.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.np-headline em,
+.np-h2 em,
+.np-special__title em,
+.np-night-cover__title em,
+.np-letters__title em {
+  font-family: var(--np-text);
+  font-style: italic;
+  letter-spacing: -0.03em;
+}
+.np-headline em {
+  color: var(--np-red);
+}
+.np-byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.6rem;
+  margin: 0;
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+}
+.np-byline b {
+  color: var(--np-ink);
+  font-weight: 800;
+}
+.np-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  padding-top: 0.4rem;
+}
+
+.np-front__side {
+  grid-column: 9 / span 4;
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+  padding-left: clamp(1.5rem, 3vw, 3rem);
+  margin-left: calc(-1 * clamp(1.5rem, 3vw, 3rem) / 2);
+  border-left: var(--np-rule);
+}
+
+/* the index of figures: a ruled strip under the fold */
+.np-index {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  border-top: 3px solid var(--np-ink);
+  border-bottom: var(--np-rule);
+}
+.np-index > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+}
+.np-index > div + div {
+  border-left: var(--np-rule);
+}
+.np-index__n {
+  order: 1;
+  margin: 0;
+  font-family: var(--np-display);
+  font-size: clamp(2rem, 1.4rem + 2vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.np-index__u {
+  order: 2;
+  font-family: var(--np-label);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+}
+
+/* ============================================ photographs: printed plates */
+.np-photo {
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+/* The portrait is printed, not shown: on arrival it comes off the press from
+   the top down, the way ink lands as a sheet passes the roller, and the
+   drawing settles from slightly too close. Scale runs on its own property so
+   the scroll drift on `translate` never fights it. */
+.np-photo__print {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: var(--np-rule);
+  outline: var(--np-rule);
+  outline-offset: 5px;
+  margin: 6px;
+  background: var(--np-paper);
+}
+.np-photo__print img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+  scale: 1.06;
+  translate: 0 calc((var(--sc-p) - 0.5) * -5%);
+  transition: scale 1400ms var(--np-ease);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .np-photo__print {
+    animation: np-press 1500ms var(--np-ease) 250ms backwards;
+  }
+  .np-photo__print img {
+    animation: np-settle 2200ms var(--np-ease) 250ms backwards;
+  }
+}
+@keyframes np-press {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes np-settle {
+  from {
+    scale: 1.24;
+    filter: contrast(1.6) brightness(1.2);
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-photo:hover .np-photo__print img {
+    scale: 1.1;
+  }
+}
+.np-photo figcaption,
+.np-figure figcaption,
+.np-special__cap {
+  margin: 0;
+  font-family: var(--np-label);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--np-ink-soft);
+}
+.np-photo figcaption b,
+.np-figure figcaption b,
+.np-special__cap b {
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--np-ink);
+}
+
+/* ================================================================ the wire */
+.np-wire {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  background: var(--np-ink);
+  color: var(--np-paper);
+  border-block: 3px solid var(--np-ink);
+}
+.np-wire__tag {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 0 1.2rem;
+  background: var(--np-red);
+  font-family: var(--np-label);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+.np-wire__track {
+  display: flex;
+  width: max-content;
+  animation: np-wire 70s linear infinite;
+}
+.np-wire__track p {
+  display: flex;
+  margin: 0;
+  padding-block: 0.85rem;
+  white-space: nowrap;
+  font-style: italic;
+  font-size: 1.02rem;
+}
+.np-wire__track span {
+  display: inline-flex;
+  align-items: center;
+}
+.np-wire__track i {
+  font-style: normal;
+  color: #e2603f;
+  padding-inline: 1.6rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-wire:hover .np-wire__track {
+    animation-play-state: paused;
+  }
+}
+@keyframes np-wire {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ============================================ p. 2, the lab report (pan) */
+/* A night sheet: the samples are falling out of a sky, so the page has to be
+   one. Same dot field as the moon plate. */
+.np-lab {
+  background-color: var(--np-night);
+  background-image:
+    radial-gradient(circle, rgba(239, 233, 220, 0.7) 0.7px, transparent 1.4px),
+    radial-gradient(circle, rgba(239, 233, 220, 0.4) 0.6px, transparent 1.2px);
+  background-size:
+    197px 211px,
+    89px 97px;
+  background-position:
+    31px 17px,
+    5px 61px;
+  color: var(--np-night-ink);
+}
+.np-lab__stage {
+  display: grid;
+  align-content: center;
+}
+.np-runhead {
+  position: absolute;
+  top: clamp(4.6rem, 12vh, 6.5rem);
+  left: var(--sc-gutter);
+  right: var(--sc-gutter);
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding-bottom: 0.6rem;
+  border-bottom: 3px double
+    color-mix(in oklab, var(--np-night-ink) 50%, transparent);
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--np-night-soft);
+}
+.np-runhead b {
+  color: #e2603f;
+  font-weight: 800;
+  margin-right: 0.6rem;
+}
+.ob-rail {
+  align-items: center;
+  gap: clamp(2rem, 3.4vw, 3.5rem);
+  padding-inline: var(--sc-gutter);
+  padding-top: clamp(3rem, 8vh, 5rem);
+}
+.ob-rail__head {
+  flex: 0 0 auto;
+  width: min(25rem, 76vw);
+  display: grid;
+  gap: 1.1rem;
+  padding-right: clamp(1.5rem, 3vw, 3rem);
+  border-right: 1px solid
+    color-mix(in oklab, var(--np-night-ink) 30%, transparent);
+}
+.ob-rail__head .np-h2 em {
+  color: #e2603f;
+}
+.np-lab__lede {
+  margin: 0;
+  font-style: italic;
+  font-size: clamp(1.05rem, 0.98rem + 0.3vw, 1.2rem);
+  line-height: 1.5;
+  color: var(--np-night-soft);
+}
+.ob-rail__tail {
+  flex: 0 0 auto;
+  width: min(20rem, 72vw);
+}
+.ob-rail__tail p {
+  margin: 0;
+  font-style: italic;
+  font-size: clamp(1.2rem, 1rem + 0.7vw, 1.6rem);
+  line-height: 1.3;
+}
+
+/* --- one sample. Every phase reads one number, --fall, written per card. --
+   0.00 to 0.46  the meteor is in flight, accelerating
+   0.42 to 0.70  the strike: a ring of light runs out from the point of impact
+   0.44 to 0.86  the card unrolls downward from where it hit
+   0.60 to 1.00  the findings land, one after another                        */
+.np-skill {
+  --fall: 0;
+  --m: clamp(0, calc(var(--fall) / 0.46), 1);
+  /* accelerating, but not so hard that the flight happens off screen */
+  --me: calc((var(--m) * var(--m) + var(--m)) / 2);
+  --hit: clamp(0, calc((var(--fall) - 0.42) / 0.28), 1);
+  --o: clamp(0, calc((var(--fall) - 0.44) / 0.42), 1);
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(16.5rem, 21vw, 20rem);
+}
+
+.np-skill__meteor {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 0;
+  width: 0;
+  height: 0;
+  /* falls in from high on the left, and speeds up as it comes */
+  translate: calc((1 - var(--me)) * -20vw) calc((1 - var(--me)) * -38vh);
+  opacity: calc(clamp(0, var(--m) * 10, 1) * clamp(0, 1 - var(--hit) * 3, 1));
+  pointer-events: none;
+}
+/* The woodcut: head at (290, 30) of a 320 x 60 cut, so the box is placed to
+   put that point on the card's impact point and turned about it. The tail
+   stretches as the meteor gathers speed. */
+.np-meteor-cut {
+  position: absolute;
+  /* the engine caps every svg at its parent width, and this parent is a
+     zero-size point by design */
+  max-width: none;
+  width: clamp(320px, 30vw, 440px);
+  aspect-ratio: 320 / 60;
+  left: calc(clamp(320px, 30vw, 440px) * -0.906);
+  top: calc(clamp(320px, 30vw, 440px) * -0.094);
+  transform-origin: 90.6% 50%;
+  rotate: 53deg;
+  scale: calc(0.55 + var(--m) * 0.45) 1;
+  overflow: visible;
+}
+
+/* the strike: a woodcut starburst, spun a little as it blows out */
+.np-skill__impact {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 0;
+  width: 5.5rem;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  scale: calc(0.25 + var(--hit) * 1.6);
+  rotate: calc(var(--hit) * 40deg);
+  opacity: calc(clamp(0, var(--hit) * 10, 1) * (1 - var(--hit)));
+  pointer-events: none;
+}
+.np-burst-cut {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* the card: a clipping cut out with pinking shears, aged at the edges */
+.np-skill__card {
+  position: relative;
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.25rem 1.3rem 1.5rem;
+  background:
+    radial-gradient(
+        circle,
+        color-mix(in oklab, var(--np-ink) 9%, transparent) 0.6px,
+        transparent 1.1px
+      )
+      0 0 / 4px 4px,
+    var(--np-paper);
+  color: var(--np-ink);
+  clip-path: inset(0 0 calc((1 - var(--o)) * 100%) 0);
+  translate: 0 calc((1 - var(--o)) * -24px);
+  scale: calc(0.86 + var(--o) * 0.14);
+  rotate: calc(var(--rot) * var(--o));
+  transform-origin: 50% 0;
+  box-shadow:
+    inset 0 0 26px rgba(130, 98, 40, 0.28),
+    0 28px 60px -28px rgba(0, 0, 0, 0.85);
+  transition:
+    rotate 600ms var(--np-ease),
+    translate 600ms var(--np-ease);
+}
+.np-skill__card::before,
+.np-skill__card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 7px;
+  background:
+    linear-gradient(135deg, var(--np-night) 35%, transparent 36%) 0 0 / 9px 7px
+      repeat-x,
+    linear-gradient(225deg, var(--np-night) 35%, transparent 36%) 0 0 / 9px 7px
+      repeat-x;
+}
+.np-skill__card::before {
+  top: 0;
+}
+.np-skill__card::after {
+  bottom: 0;
+  rotate: 180deg;
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-skill:hover .np-skill__card {
+    rotate: 0deg;
+    translate: 0 -6px;
+  }
+}
+
+.np-skill__head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.35rem 0 0.8rem;
+  border-bottom: 3px double var(--np-ink);
+}
+/* the medallion: an engraving set in a double ring */
+.np-skill__medal {
+  display: grid;
+  place-items: center;
+  width: 4.1rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid var(--np-ink);
+  outline: 1px solid var(--np-ink);
+  outline-offset: 3px;
+  background: color-mix(in oklab, var(--np-paper-deep) 70%, var(--np-paper));
+}
+.np-specimen {
+  width: 82%;
+  height: 82%;
+  overflow: visible;
+}
+.np-skill__tag {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.7rem;
+  margin: 0 0 0.3rem;
+  font-family: var(--np-label);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+}
+.np-skill__tag b {
+  color: var(--np-red);
+  font-weight: 800;
+}
+.np-skill__title {
+  margin: 0;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(1.55rem, 1.2rem + 0.9vw, 2.1rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.np-skill__assay {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+}
+.np-skill__assay b {
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--np-ink);
+}
+.np-skill__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+/* each finding lands after the card is open, a beat apart */
+.np-skill__list li {
+  --k: clamp(0, calc((var(--fall) - 0.6 - var(--j) * 0.04) * 7), 1);
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding-block: 0.45rem;
+  border-top: 1px solid color-mix(in oklab, var(--np-ink) 16%, transparent);
+  opacity: var(--k);
+  translate: calc((1 - var(--k)) * -14px) 0;
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+.np-skill__no {
+  flex: 0 0 auto;
+  min-width: 1.5rem;
+  font-family: var(--np-display);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--np-red);
+}
+.np-skill__name {
+  position: relative;
+  background: linear-gradient(var(--np-red), var(--np-red)) 0 100% / 0% 1.5px
+    no-repeat;
+  transition: background-size 500ms var(--np-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-skill__list li:hover .np-skill__name {
+    background-size: 100% 1.5px;
+  }
+}
+.np-skill__list i {
+  flex: 1 1 auto;
+  min-width: 1rem;
+  border-bottom: 1px dotted color-mix(in oklab, var(--np-ink) 40%, transparent);
+  translate: 0 -0.25em;
+}
+.np-skill__list small {
+  font-family: var(--np-label);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--np-ink-soft);
+}
+.np-skill__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--np-ink);
+  font-family: var(--np-label);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+  opacity: clamp(0, calc((var(--fall) - 0.88) * 9), 1);
+}
+/* the seal lands last, in rubber */
+.np-skill__seal {
+  padding: 0.25rem 0.5rem;
+  border: 2px double var(--np-red);
+  color: var(--np-red);
+  font-weight: 800;
+  rotate: -7deg;
+  scale: calc(1.8 - clamp(0, calc((var(--fall) - 0.9) * 10), 1) * 0.8);
+  mix-blend-mode: multiply;
+}
+
+/* ================================ p. 3 opener: the plate opens to the page */
+.np-special__stage {
+  background: var(--np-paper);
+}
+.np-special__frame {
+  --t: clamp(0, calc((var(--sc-p) - 0.06) * 2.5), 1);
+  position: absolute;
+  inset: 0;
+  background: var(--np-night);
+  color: var(--np-night-ink);
+  /* A column-sized photograph in the middle of the sheet that opens until it
+     is the sheet. Clip, not scale, so the canvas never resamples. */
+  clip-path: inset(
+    calc((1 - var(--t)) * 22%) calc((1 - var(--t)) * 33%)
+      calc((1 - var(--t)) * 22%) calc((1 - var(--t)) * 33%)
+  );
+}
+/* A sky for the plate: three tiled dot layers at co-prime sizes, so the
+   repeat never lines up into a visible grid. */
+.np-special__frame {
+  background-color: var(--np-night);
+  background-image:
+    radial-gradient(circle, rgba(239, 233, 220, 0.85) 0.7px, transparent 1.4px),
+    radial-gradient(circle, rgba(239, 233, 220, 0.55) 0.6px, transparent 1.2px),
+    radial-gradient(circle, rgba(239, 233, 220, 0.35) 0.5px, transparent 1px);
+  background-size:
+    211px 197px,
+    137px 149px,
+    67px 71px;
+  background-position:
+    13px 41px,
+    88px 7px,
+    29px 53px;
+}
+/* The moon: cut from its black square into a disc, then carried by the reader.
+   It arrives small and turned, and comes round to face the page as the plate
+   opens, sliding right so the headline has the dark half of the sheet. */
+.np-moon {
+  --mt: clamp(0, calc((var(--sc-p) - 0.04) * 1.6), 1);
+  position: absolute;
+  top: 50%;
+  left: calc(50% + var(--mt) * 20%);
+  width: min(76vh, 48vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  scale: calc(0.52 + var(--mt) * 0.48);
+  rotate: calc(-28deg + var(--sc-p) * 40deg);
+  border-radius: 50%;
+  filter: drop-shadow(0 0 70px rgba(239, 233, 220, 0.16));
+  will-change: transform;
+}
+.np-moon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  clip-path: circle(49.4% at 50% 50%);
+}
+.np-special__over,
+.np-special__cap {
+  position: absolute;
+  left: 33%;
+  right: 33%;
+  opacity: clamp(0, calc(1 - var(--sc-p) * 5), 1);
+}
+.np-special__over {
+  top: calc(22% - 2.2rem);
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding-bottom: 0.45rem;
+  border-bottom: 3px double var(--np-ink);
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.np-special__over span:first-child {
+  color: var(--np-red);
+}
+.np-special__cap {
+  top: calc(78% + 0.8rem);
+}
+.np-special__read {
+  position: absolute;
+  z-index: 2;
+  left: var(--sc-gutter);
+  bottom: clamp(3rem, 12vh, 8rem);
+  max-width: min(44rem, 84vw);
+  display: grid;
+  gap: 1rem;
+}
+.np-special__title {
+  margin: 0;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(3rem, 1.5rem + 5.4vw, 7rem);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+}
+.np-special__note {
+  margin: 0;
+  max-width: 34ch;
+  font-style: italic;
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
+  line-height: 1.4;
+  color: color-mix(in oklab, var(--np-night-ink) 82%, transparent);
+}
+
+/* ======================================================= the career ledger */
+.np-ledger,
+.np-letters {
+  padding-block: clamp(5rem, 10vw, 9rem);
+}
+.np-sechead {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1.1rem;
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+  border-bottom: 3px solid var(--np-ink);
+}
+.np-sechead > div {
+  display: grid;
+  gap: 0.8rem;
+}
+.np-sechead__aside {
+  margin: 0;
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+  text-align: right;
+}
+.np-ledger__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  gap: clamp(2rem, 4vw, 4rem);
+}
+/* --- the dossier. A spine down the margin, a sticky year, a typed sheet. -- */
+.np-entries {
+  --rail: clamp(5.5rem, 9vw, 8rem);
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+}
+/* the spine: dotted ink, inked over in red as the reader goes down it */
+.np-spine {
+  position: absolute;
+  top: 0.6rem;
+  bottom: 0;
+  left: calc(var(--rail) - 1.2rem);
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--np-ink) 40%, transparent) 0 3px,
+    transparent 3px 7px
+  );
+}
+.np-spine__ink {
+  position: absolute;
+  inset: 0;
+  background: var(--np-red);
+  transform-origin: 50% 0;
+}
+.np-entry {
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  align-items: start;
+}
+.np-entry__rail {
+  position: sticky;
+  top: 6rem;
+  display: grid;
+  justify-items: start;
+  gap: 0.6rem;
+  padding-top: 0.2rem;
+}
+.np-entry__node {
+  position: absolute;
+  top: 0.55rem;
+  left: calc(var(--rail) - 1.2rem - 6px);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--np-paper);
+  border: 3px solid var(--np-red);
+}
+.np-entry__year {
+  font-family: var(--np-display);
+  font-size: clamp(1.7rem, 1.2rem + 1.4vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  writing-mode: horizontal-tb;
+}
+
+/* the sheet: onion skin out of the typewriter, punched for the binder */
+.np-sheet {
+  position: relative;
+  display: grid;
+  gap: 0.8rem;
+  padding: clamp(1.4rem, 2.4vw, 2rem) clamp(1.3rem, 2.6vw, 2.4rem)
+    clamp(1.5rem, 2.6vw, 2.2rem) clamp(2.6rem, 4vw, 3.6rem);
+  background:
+    linear-gradient(
+      to right,
+      transparent calc(clamp(2.6rem, 4vw, 3.6rem) - 0.8rem),
+      color-mix(in oklab, var(--np-red) 55%, transparent)
+        calc(clamp(2.6rem, 4vw, 3.6rem) - 0.8rem)
+        calc(clamp(2.6rem, 4vw, 3.6rem) - 0.8rem + 1px),
+      transparent 0
+    ),
+    #f8f4ea;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.1),
+    0 18px 40px -22px rgba(40, 30, 10, 0.55),
+    inset 0 0 40px rgba(150, 120, 60, 0.12);
+  transform-origin: 20% 0;
+}
+.np-sheet__holes {
+  position: absolute;
+  left: clamp(0.8rem, 1.4vw, 1.2rem);
+  top: 1.6rem;
+  bottom: 1.6rem;
+  width: 12px;
+  background: radial-gradient(
+      circle,
+      var(--np-paper-deep) 4.5px,
+      transparent 5.5px
+    )
+    0 0 / 12px 4.2rem repeat-y;
+  opacity: 0.95;
+}
+.np-sheet__file {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+  margin: 0;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px dashed color-mix(in oklab, var(--np-ink) 45%, transparent);
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--np-red);
+}
+.np-sheet__file span {
+  color: var(--np-ink-soft);
+}
+.np-sheet__title {
+  margin: 0;
+  overflow: hidden;
+  padding-bottom: 0.1em;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 1.4rem + 1.8vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+}
+.np-sheet__title > span {
+  display: inline-block;
+}
+/* the date, in rubber, not in type */
+.np-sheet__stamp {
+  justify-self: start;
+  margin: 0.1rem 0 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border: 2.5px double var(--np-red);
+  color: var(--np-red);
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* typed text: Special Elite carries the uneven strikes; the shadow is ink
+   bleeding a hair into the paper fibres */
+.np-typewriter {
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: clamp(0.92rem, 0.88rem + 0.18vw, 1.02rem);
+  line-height: 1.72;
+  color: #221f19;
+  text-shadow:
+    0 0 0.6px rgba(34, 31, 25, 0.55),
+    0.3px 0.2px 0 rgba(34, 31, 25, 0.18);
+}
+.np-typewriter p {
+  margin: 0;
+}
+.np-typewriter p + p {
+  margin-top: 0.9em;
+}
+.np-typewriter--cols > div[aria-hidden] {
+  column-width: 20rem;
+  column-gap: 2.4rem;
+  column-rule: 1px dashed color-mix(in oklab, var(--np-ink) 28%, transparent);
+}
+.np-typewriter--cols p {
+  break-inside: avoid-column;
+}
+.np-typed__rest {
+  visibility: hidden;
+}
+.np-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin: 0 0.04em -0.18em;
+  background: var(--np-red);
+  animation: np-caret 0.9s steps(1) infinite;
+}
+@keyframes np-caret {
+  50% {
+    opacity: 0;
+  }
+}
+.np-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.np-ledger__side {
+  position: sticky;
+  top: 5.5rem;
+  align-self: start;
+  display: grid;
+  align-content: start;
+  gap: 1.8rem;
+  padding-left: clamp(1.5rem, 3vw, 2.5rem);
+  border-left: var(--np-rule);
+}
+.np-figure {
+  margin: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+.np-figure__frame {
+  padding: 1rem;
+  border: var(--np-rule);
+  outline: var(--np-rule);
+  outline-offset: 4px;
+  margin: 5px;
+  background: var(--np-paper-deep);
+  color: var(--np-ink);
+}
+.np-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ob-plate-t {
+  font-family: var(--np-label);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  fill: currentColor;
+}
+.np-box {
+  padding: 1.1rem 1.2rem;
+  border-top: 3px solid var(--np-ink);
+  border-bottom: var(--np-rule);
+}
+.np-box p {
+  margin: 0;
+  line-height: 1.45;
+}
+.np-box__label {
+  font-family: var(--np-label);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--np-red);
+  margin-bottom: 0.5rem !important;
+}
+.np-box__title {
+  font-family: var(--np-display);
+  font-size: 1.35rem;
+  line-height: 1.15;
+  margin-bottom: 0.3rem !important;
+}
+.np-box__meta {
+  margin-top: 0.5rem !important;
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+}
+
+/* ======================================================= the night edition */
+.np-night-cover {
+  position: relative;
+  min-height: 86vh;
+  display: grid;
+  align-content: center;
+  padding-block: clamp(6rem, 12vw, 10rem);
+  background: var(--np-night);
+  color: var(--np-night-ink);
+  border-top: 6px solid var(--np-ink);
+}
+.np-night-cover .np-wrap {
+  display: grid;
+  gap: 1.5rem;
+}
+.np-night-cover .np-kicker {
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid
+    color-mix(in oklab, var(--np-night-ink) 26%, transparent);
+  justify-content: space-between;
+}
+.np-night-cover__title {
+  margin: 0;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(3.4rem, 1.2rem + 9vw, 11rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+}
+/* each word sits in its own slot and rises out of it */
+.np-night-cover__title .np-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  margin-right: 0.22em;
+}
+.np-night-cover__title .np-mask > span {
+  display: inline-block;
+}
+.np-night-cover__title .np-em {
+  font-family: var(--np-text);
+  font-style: italic;
+  letter-spacing: -0.03em;
+  color: #e2603f;
+}
+.np-night-cover__note {
+  margin: 0;
+  max-width: 46ch;
+  font-style: italic;
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
+  line-height: 1.45;
+  color: var(--np-night-soft);
+}
+
+/* the system. Never put `position` on .ob-system: the engine makes the stage
+   sticky, and any position declaration of equal specificity later in the
+   cascade silently un-pins the whole act. */
+.np-system {
+  background-color: var(--np-night);
+  background-image:
+    radial-gradient(circle, rgba(239, 233, 220, 0.55) 0.7px, transparent 1.4px),
+    radial-gradient(circle, rgba(239, 233, 220, 0.3) 0.6px, transparent 1.2px);
+  background-size:
+    223px 181px,
+    101px 113px;
+  background-position:
+    47px 23px,
+    13px 71px;
+  color: var(--np-night-ink);
+}
+.ob-system {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.ob-system__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+/* The data plate is a clipping: newsprint pinned to the night sheet. */
+.ob-system__plate {
+  position: absolute;
+  z-index: 2;
+  left: var(--sc-gutter);
+  bottom: clamp(3.5rem, 11vh, 7rem);
+  width: min(30rem, 84vw);
+}
+/* The clipping itself. Motion owns its transform, so nothing here sets one. */
+.ob-system__body {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.5rem 1.6rem 1.4rem;
+  background: var(--np-paper);
+  color: var(--np-ink);
+  transform-origin: 30% 0;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.2),
+    0 22px 50px -24px rgba(0, 0, 0, 0.7);
+}
+.ob-system__body::before {
+  content: '';
+  position: absolute;
+  top: -0.7rem;
+  left: 50%;
+  width: 5.5rem;
+  height: 1.4rem;
+  translate: -50% 0;
+  rotate: 2deg;
+  background: color-mix(in oklab, var(--np-paper-deep) 80%, transparent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.ob-system__desig {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding-bottom: 0.6rem;
+  border-bottom: 3px double var(--np-ink);
+  font-family: var(--np-label);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+}
+.ob-system__desig span:first-child {
+  color: var(--np-red);
+  font-weight: 800;
+}
+.ob-system__name {
+  margin: 0;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 1.3rem + 1.4vw, 2.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+.ob-specs {
+  margin: 0;
+  display: grid;
+}
+.ob-specs div {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: 1rem;
+  padding-block: 0.45rem;
+  border-top: 1px solid color-mix(in oklab, var(--np-ink) 22%, transparent);
+}
+.ob-specs dt {
+  font-family: var(--np-label);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+  padding-top: 0.15rem;
+}
+.ob-specs dd {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+.ob-system__note {
+  margin: 0;
+  font-style: italic;
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+/* the stamp: rubber, red, slightly askew, as a desk would file it */
+.ob-system__stamp {
+  position: absolute;
+  right: -0.8rem;
+  bottom: -2.3rem;
+  margin: 0;
+  padding: 0.25rem 0.6rem;
+  border: 2px solid var(--np-red);
+  color: var(--np-red);
+  font-family: var(--np-label);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  mix-blend-mode: multiply;
+}
+.ob-system__hint {
+  position: absolute;
+  z-index: 2;
+  top: clamp(7.5rem, 17vh, 9.5rem);
+  right: var(--sc-gutter);
+  margin: 0;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--np-night-soft);
+  transition: opacity 600ms var(--np-ease-out);
+}
+.ob-system__hint[data-spent='true'] {
+  opacity: 0;
+}
+.ob-system__index {
+  position: absolute;
+  z-index: 2;
+  right: var(--sc-gutter);
+  bottom: clamp(3.5rem, 11vh, 7rem);
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--np-label);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--np-night-soft);
+  text-align: right;
+}
+.ob-system__index li {
+  position: relative;
+  padding-right: 1rem;
+  transition: color 400ms var(--np-ease-out);
+}
+/* the sub-editor's rule, carried from entry to entry by a layout animation */
+.ob-system__mark {
+  position: absolute;
+  right: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  background: #e2603f;
+}
+.ob-system__index b {
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: 1.1rem;
+  letter-spacing: 0;
+  margin-right: 0.5rem;
+}
+.ob-system__index li[data-on='true'] {
+  color: var(--np-night-ink);
+}
+.ob-system__index li[data-on='true'] b {
+  color: #e2603f;
+}
+
+/* ================================================= letters & commissions */
+.np-letters__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(2.5rem, 5vw, 5rem);
+  align-items: start;
+}
+.np-letters__copy {
+  display: grid;
+  gap: 1.6rem;
+  justify-items: start;
+}
+.np-letters__title {
+  margin: 0;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(3rem, 1.4rem + 6vw, 7.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+}
+.np-letters__title em {
+  color: var(--np-red);
+}
+.np-desk {
+  width: 100%;
+  margin: 1rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 3px solid var(--np-ink);
+  border-bottom: var(--np-rule);
+}
+.np-desk > div {
+  padding: 1rem 1.2rem 1.2rem 0;
+}
+.np-desk > div + div {
+  padding-left: 1.2rem;
+  border-left: var(--np-rule);
+}
+.np-desk dt {
+  margin-bottom: 0.55rem;
+  font-family: var(--np-label);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--np-red);
+}
+.np-desk dd {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.np-letters__grid .np-desk {
+  margin: 0;
+  grid-template-columns: 1fr;
+  align-self: end;
+}
+.np-letters__grid .np-desk > div,
+.np-letters__grid .np-desk > div + div {
+  padding: 1rem 0;
+  border-left: 0;
+}
+.np-letters__grid .np-desk > div + div {
+  border-top: var(--np-rule);
+}
+
+/* The last plate. As the reader runs out of page the camera falls toward the
+   horizon, and a slow sweep of light runs round the disk so it is never a
+   still picture of something that is never still. */
+.np-photo--hole {
+  margin-top: clamp(3rem, 7vw, 6rem);
+}
+.np-hole {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 891 / 446;
+  border: var(--np-rule);
+  outline: var(--np-rule);
+  outline-offset: 5px;
+  margin: 6px;
+  background: var(--np-night);
+}
+.np-hole__zoom {
+  position: absolute;
+  inset: 0;
+  transform-origin: 71.5% 47%;
+  scale: calc(1 + clamp(0, calc((var(--sc-p) - 0.42) * 1.5), 0.75));
+  will-change: transform;
+}
+.np-hole__zoom img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.np-hole__spin {
+  position: absolute;
+  left: 71.5%;
+  top: 47%;
+  width: 52%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  /* only where the disk is: a flat ellipse with the shadow cut out */
+  mask: radial-gradient(
+    ellipse 50% 17% at 50% 50%,
+    transparent 30%,
+    #000 42%,
+    #000 78%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+}
+/* the sweep turns; the mask that confines it to the disk does not */
+.np-hole__spin::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255, 248, 230, 0.34) 24deg,
+    transparent 70deg,
+    transparent 180deg,
+    rgba(255, 248, 230, 0.2) 210deg,
+    transparent 250deg
+  );
+  animation: np-spin 9s linear infinite;
+}
+
+@keyframes np-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ================================================================ footer */
+.np-foot {
+  position: relative;
+  z-index: 1;
+  background: var(--np-ink);
+  color: var(--np-night-ink);
+  border-top: 6px double var(--np-paper-deep);
+  padding-block: clamp(3.5rem, 6vw, 5rem) 2rem;
+}
+.np-foot__plate {
+  margin: 0 0 2rem;
+  font-family: var(--np-black);
+  font-size: clamp(2.4rem, 1rem + 6vw, 6.5rem);
+  line-height: 1;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid
+    color-mix(in oklab, var(--np-night-ink) 26%, transparent);
+}
+.np-foot__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2.5rem;
+}
+.np-foot__about {
+  margin: 0;
+  max-width: 46ch;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--np-night-soft);
+}
+.np-foot__label {
+  margin: 0 0 0.8rem;
+  font-family: var(--np-label);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #e2603f;
+}
+.np-foot ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.np-foot a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 300ms var(--np-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-foot a:hover {
+    color: #e2603f;
+  }
+}
+.np-foot__end {
+  margin: 3.5rem 0 1rem;
+  text-align: center;
+  font-family: var(--np-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.3em;
+}
+.np-foot__legal {
+  margin: 0;
+  padding-top: 1rem;
+  border-top: 1px solid
+    color-mix(in oklab, var(--np-night-ink) 18%, transparent);
+  text-align: center;
+  font-family: var(--np-label);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--np-night-soft);
+}
+
+/* =============================================================== tablet */
+@media (max-width: 1023px) {
+  .np-bar__links,
+  .np-bar__sect {
+    display: none;
+  }
+  .np-bar__inner {
+    grid-template-columns: 1fr auto;
+  }
+  .np-lead {
+    grid-column: 1 / -1;
+  }
+  .np-front__side {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    margin: 2.5rem 0 0;
+    padding: 2rem 0 0;
+    border-left: 0;
+    border-top: var(--np-rule);
+  }
+  .np-ledger__grid,
+  .np-letters__grid {
+    grid-template-columns: 1fr;
+  }
+  .np-ledger__side {
+    padding-left: 0;
+    border-left: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .np-ledger__side {
+    position: static;
+  }
+  .np-special__over,
+  .np-special__cap {
+    left: 14%;
+    right: 14%;
+  }
+  .np-special__frame {
+    clip-path: inset(
+      calc((1 - var(--t)) * 22%) calc((1 - var(--t)) * 14%)
+        calc((1 - var(--t)) * 22%) calc((1 - var(--t)) * 14%)
+    );
+  }
+}
+
+/* ================================================================ phone */
+@media (max-width: 760px) {
+  .np-mast__ears p:nth-child(2) {
+    display: none;
+  }
+  .np-mast__dateline {
+    justify-content: center;
+    text-align: center;
+  }
+  .np-mast__dateline span:nth-child(n + 3) {
+    display: none;
+  }
+  .np-bar__name {
+    font-size: 1.1rem;
+  }
+  .np-bar__folio {
+    display: none;
+  }
+  .np-front__side,
+  .np-ledger__side {
+    grid-template-columns: 1fr;
+  }
+  .np-index {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .np-index > div:nth-child(3) {
+    border-left: 0;
+  }
+  .np-index > div:nth-child(n + 3) {
+    border-top: var(--np-rule);
+  }
+  /* on a phone the sheet needs the width; the stamp already carries the
+     year, so the rail keeps only its spine and nodes */
+  .np-entries {
+    --rail: 1.9rem;
+  }
+  .np-entry__year {
+    display: none;
+  }
+  .np-desk {
+    grid-template-columns: 1fr;
+  }
+  .np-desk > div,
+  .np-desk > div + div {
+    padding: 1rem 0;
+    border-left: 0;
+  }
+  .np-desk > div + div {
+    border-top: var(--np-rule);
+  }
+  .np-sechead {
+    flex-direction: column;
+    align-items: start;
+  }
+  .np-sechead__aside {
+    text-align: left;
+  }
+  .np-foot__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .np-foot__about {
+    grid-column: 1 / -1;
+  }
+  .np-runhead span:last-child {
+    display: none;
+  }
+
+  /* the system: plate owns the lower two thirds, the orbits sit above it */
+  .ob-system__plate {
+    left: 0.9rem;
+    right: 0.9rem;
+    width: auto;
+    bottom: 1.2rem;
+  }
+  .ob-system__body {
+    gap: 0.6rem;
+    padding: 1.1rem 1.2rem;
+  }
+  .ob-specs div {
+    grid-template-columns: 5rem 1fr;
+    padding-block: 0.3rem;
+  }
+  .ob-specs dd {
+    font-size: 0.84rem;
+  }
+  .ob-system__note,
+  .ob-system__index,
+  .ob-system__hint {
+    display: none;
+  }
+  .np-special__read {
+    bottom: 2.5rem;
+  }
+}
+
+/* ======================================================= reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .np-wire__track {
+    animation: none;
+  }
+  .np-special__frame {
+    clip-path: none;
+  }
+  .np-special__over,
+  .np-special__cap {
+    display: none;
+  }
+  .np-photo__print img,
+  .np-moon,
+  .np-hole__zoom {
+    translate: none;
+    transition: none;
+  }
+  .np-moon {
+    translate: -50% -50%;
+    rotate: none;
+  }
+  .np-hole__zoom {
+    scale: none;
+  }
+  .np-hole__spin::before {
+    animation: none;
+  }
+}
+
+/* the nameplate is one line or it is not a nameplate: on a phone it scales to
+   the measure instead of wrapping */
+@media (max-width: 760px) {
+  .np-nameplate {
+    font-size: 9.4vw;
+  }
+}
+@media (max-width: 760px) {
+  .ob-system__stamp {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .np-moon {
+    left: 50%;
+    top: 38%;
+    width: min(70vw, 52vh);
+  }
+}
+
+/* ======================================================== the page rack --
+   The edition's pages, stacked at the left margin as yellowed newsprint. */
+.np-rack {
+  --rack-paper: #e7ddc4;
+  position: fixed;
+  z-index: 61;
+  left: 10px;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  justify-items: start;
+  gap: 0.9rem;
+}
+.np-rack ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.np-rack li {
+  position: relative;
+}
+/* a pile, not a list: each page overlaps the one above it */
+.np-rack li + li {
+  margin-top: -1.1rem;
+}
+.np-rack li:has([data-on='true']),
+.np-rack li:hover,
+.np-rack li:focus-within {
+  z-index: 2;
+}
+.np-rack__page {
+  position: relative;
+  display: block;
+  width: 52px;
+  aspect-ratio: 48 / 66;
+  padding: 2px;
+  background: var(--rack-paper);
+  color: var(--np-ink);
+  transform-origin: 0 50%;
+  /* age: darker at the edges, the way old stock browns from the outside in */
+  box-shadow:
+    inset 0 0 9px rgba(120, 88, 36, 0.38),
+    0 1px 0 rgba(0, 0, 0, 0.18),
+    0 10px 18px -8px rgba(0, 0, 0, 0.55);
+  outline: none;
+  transition: filter 400ms var(--np-ease-out);
+}
+.np-rack__page svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.np-rack__page[data-read='true'] {
+  filter: sepia(0.35) brightness(0.93);
+}
+/* read pages get a turned-down corner */
+.np-rack__page[data-read='true']::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(225deg, var(--np-paper) 0 50%, #c7b991 50% 100%);
+  box-shadow: -1px 1px 2px rgba(0, 0, 0, 0.25);
+}
+/* the page in hand carries the sub-editor's red tab */
+.np-rack__page[data-on='true']::before {
+  content: '';
+  position: absolute;
+  top: 18%;
+  right: -4px;
+  width: 4px;
+  height: 32%;
+  background: var(--np-red);
+}
+.np-rack__page:focus-visible {
+  outline: 2px solid var(--np-red);
+  outline-offset: 3px;
+}
+.np-rack__num {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1px;
+  text-align: center;
+  font-family: var(--np-display);
+  font-size: 8px;
+  line-height: 1;
+  color: var(--np-ink-soft);
+}
+.np-rack__label {
+  position: absolute;
+  left: calc(52px + 0.9rem);
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  background: var(--np-ink);
+  color: var(--np-paper);
+  font-family: var(--np-label);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.5);
+}
+.np-rack__label b {
+  color: #e2603f;
+  font-weight: 800;
+}
+.np-rack__count {
+  margin: 0;
+  padding: 0.2rem 0.45rem;
+  background: var(--rack-paper);
+  color: var(--np-ink);
+  box-shadow: inset 0 0 6px rgba(120, 88, 36, 0.35);
+  font-family: var(--np-label);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+/* the rack needs a real margin to live in; below that the running head is
+   the whole of the navigation */
+
+/* ======================================================= the editor's pen --
+   Handwriting on the front page: a blue-black fountain pen for the note, red
+   for the corrections to type. Words are inline blocks so the clip that
+   writes them can run left to right without breaking a word across lines. */
+.np-pen {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: 'Caveat', 'Segoe Print', cursive;
+}
+.np-pen--red {
+  color: var(--np-red);
+}
+.np-fix {
+  position: relative;
+}
+.np-fix__wrong {
+  position: relative;
+  display: inline-block;
+}
+.np-scribble {
+  position: absolute;
+  left: -5%;
+  top: 28%;
+  width: 110%;
+  height: 52%;
+  overflow: visible;
+  pointer-events: none;
+  stroke: var(--np-red);
+  stroke-width: var(--strike, 3px);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* the headline: misprints in type, corrections in red pen */
+.np-headline {
+  --strike: 0.055em;
+}
+.np-headline .np-fix__wrong {
+  color: color-mix(in oklab, var(--np-ink) 78%, transparent);
+}
+.np-fix__right {
+  font-weight: 700;
+  font-size: 1.08em;
+  letter-spacing: 0;
+  rotate: -2deg;
+  transform-origin: 0 70%;
+}
+/* the deck: written in, not set */
+.np-deck--hand {
+  font-style: normal;
+  max-width: 34ch;
+}
+.np-hand {
+  --strike: 0.085em;
+  font-family: 'Caveat', 'Segoe Print', cursive;
+  font-weight: 600;
+  font-size: clamp(1.55rem, 1.15rem + 1.2vw, 2.2rem);
+  line-height: 1.18;
+  color: #22305a;
+}
+.np-hand .np-scribble {
+  stroke: currentColor;
+}
+/* the sign-off, in red, a little askew */
+.np-hand--sign {
+  --strike: 0.08em;
+  display: inline-block;
+  margin-left: 0.6rem;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--np-red);
+  rotate: -3deg;
+}
+
+.np-nowrap {
+  white-space: nowrap;
+}
+
+/* ===================================================== the desk underneath --
+   Typewritten notes and loose paper under the page. Faint by design: texture
+   first, something to read only when you look for it. */
+.np-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.np-backdrop__stack {
+  position: absolute;
+  inset: 0 0 -60vh;
+  will-change: transform;
+}
+.np-desk-item {
+  --ink: rgba(28, 25, 20, 0.34);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: max(var(--w), 230px);
+  rotate: var(--rot);
+  padding: 1.6rem 1.5rem 1.8rem;
+  background: #f6f1e5;
+  color: var(--ink);
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: clamp(0.72rem, 0.66rem + 0.25vw, 0.9rem);
+  line-height: 1.75;
+  opacity: 0.5;
+  box-shadow:
+    inset 0 0 36px rgba(130, 98, 40, 0.12),
+    0 1px 0 rgba(0, 0, 0, 0.05),
+    0 16px 34px -22px rgba(60, 40, 10, 0.4);
+}
+.np-desk-item p {
+  margin: 0;
+  white-space: pre;
+}
+.np-desk-item__title {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem !important;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid currentColor;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.np-desk-rest {
+  visibility: hidden;
+}
+.np-desk-caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-bottom: -0.15em;
+  background: rgba(178, 48, 28, 0.55);
+  animation: np-caret 0.9s steps(1) infinite;
+}
+
+/* an index card: blue rules, one red head rule */
+.np-desk-item--card {
+  padding-top: 1.1rem;
+  background:
+    linear-gradient(rgba(178, 48, 28, 0.35), rgba(178, 48, 28, 0.35)) 0 3.1rem /
+      100% 1px no-repeat,
+    repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(1.75em - 1px),
+        rgba(70, 110, 170, 0.22) calc(1.75em - 1px) 1.75em
+      )
+      0 3.35rem / 100% 100% no-repeat,
+    #fbf8ef;
+}
+.np-desk-item--card .np-desk-item__title {
+  border-bottom: 0;
+  font-size: 1.15em;
+}
+
+/* a page torn from a spiral notebook: holes down the left, a ragged top */
+.np-desk-item--torn {
+  padding-left: 2.6rem;
+  background:
+    radial-gradient(circle, var(--np-paper) 5px, transparent 6px) 0.7rem
+      0.6rem / 12px 2rem repeat-y,
+    linear-gradient(
+      to right,
+      transparent 2rem,
+      rgba(178, 48, 28, 0.3) 2rem 2.06rem,
+      transparent 0
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      #f9f5ea 0 calc(1.75em - 1px),
+      rgba(70, 110, 170, 0.18) calc(1.75em - 1px) 1.75em
+    );
+  clip-path: polygon(
+    0 2%,
+    6% 0,
+    13% 2.5%,
+    21% 0.5%,
+    30% 2.2%,
+    38% 0,
+    47% 2%,
+    55% 0.4%,
+    63% 2.4%,
+    72% 0.2%,
+    80% 2%,
+    88% 0.3%,
+    95% 2.2%,
+    100% 0.6%,
+    100% 100%,
+    0 100%
+  );
+}
+
+/* a till receipt: narrow, zigzag foot, centred mono */
+.np-desk-item--receipt {
+  width: max(var(--w), 150px);
+  padding: 1.1rem 1rem 1.6rem;
+  text-align: center;
+  background: #fdfbf4;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 97%,
+    92% 100%,
+    84% 97%,
+    76% 100%,
+    68% 97%,
+    60% 100%,
+    52% 97%,
+    44% 100%,
+    36% 97%,
+    28% 100%,
+    20% 97%,
+    12% 100%,
+    4% 97%,
+    0 100%
+  );
+}
+.np-desk-item--receipt p {
+  white-space: pre;
+}
+.np-desk-item--receipt .np-desk-item__title {
+  justify-content: center;
+  border-bottom-style: dashed;
+}
+
+/* a carbon copy: thin blue paper, the type slightly doubled */
+.np-desk-item--carbon {
+  --ink: rgba(40, 60, 120, 0.4);
+  background: #e9ecef;
+  text-shadow: 0.6px 0.4px 0 rgba(40, 60, 120, 0.18);
+}
+
+/* a paper clip on the top edge */
+.np-desk-clip {
+  position: absolute;
+  top: -0.9rem;
+  left: 1.4rem;
+  width: 1rem;
+  height: 3rem;
+  border: 2px solid rgba(110, 112, 118, 0.55);
+  border-radius: 0.5rem;
+}
+.np-desk-clip::after {
+  content: '';
+  position: absolute;
+  inset: 0.35rem 0.18rem 0.6rem;
+  border: 2px solid rgba(110, 112, 118, 0.55);
+  border-bottom: 0;
+  border-radius: 0.4rem 0.4rem 0 0;
+}
+/* where the cup stood */
+.np-desk-ring {
+  position: absolute;
+  right: -2.4rem;
+  bottom: -2rem;
+  width: 7.5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 5px solid rgba(120, 80, 35, 0.16);
+  box-shadow:
+    inset 0 0 0 2px rgba(120, 80, 35, 0.06),
+    0 0 0 1px rgba(120, 80, 35, 0.08);
+}
+
+@media (max-width: 760px) {
+  .np-desk-item:nth-child(n + 4) {
+    display: none;
+  }
+  .np-desk-item {
+    opacity: 0.4;
+  }
+}
+
+/* ======================================================== responsive pass */
+
+/* the rack becomes a tray along the foot of the screen below a real margin */
+.np-rack[data-tray='true'] {
+  left: 50%;
+  top: auto;
+  bottom: 0;
+  translate: -50% 0;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 0 0.6rem env(safe-area-inset-bottom);
+  pointer-events: none;
+}
+.np-rack[data-tray='true'] ol {
+  display: flex;
+  align-items: flex-end;
+  /* a paper ledge for the pages to stand in */
+  padding: 0 0.7rem;
+  background: linear-gradient(to top, var(--np-ink) 0 14px, transparent 14px);
+  pointer-events: auto;
+}
+.np-rack[data-tray='true'] li + li {
+  margin-top: 0;
+  margin-left: -6px;
+}
+.np-rack[data-tray='true'] .np-rack__page {
+  width: 40px;
+  transform-origin: 50% 100%;
+  /* the touch target runs to the bottom of the screen */
+  margin-bottom: -10px;
+}
+.np-rack[data-tray='true'] .np-rack__page[data-on='true']::before {
+  top: -4px;
+  right: 30%;
+  width: 40%;
+  height: 4px;
+}
+.np-rack__now {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.35rem 0.7rem;
+  background: var(--np-ink);
+  color: var(--np-paper);
+  font-family: var(--np-label);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.45);
+}
+.np-rack__now b {
+  color: #e2603f;
+  font-weight: 800;
+}
+@media (max-width: 1359px) {
+  /* room under the last line of every screen for the tray */
+  .np-foot {
+    padding-bottom: 7rem;
+  }
+  .ob-system__plate,
+  .ob-system__index {
+    bottom: clamp(6rem, 13vh, 8rem);
+  }
+  .np-special__read {
+    bottom: clamp(6.5rem, 15vh, 9rem);
+  }
+}
+
+/* the running head keeps its nameplate on one line */
+.np-bar__name {
+  white-space: nowrap;
+}
+@media (max-width: 420px) {
+  .np-bar__name {
+    font-size: 0.98rem;
+  }
+  .np-bar .np-btn--sm {
+    padding-inline: 0.7rem;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* justified text needs a measure; in a phone column it opens rivers */
+@media (max-width: 600px) {
+  .np-copy {
+    text-align: left;
+  }
+  .np-copy p + p {
+    text-indent: 0;
+  }
+}
+
+/* the rubber stamp wraps inside the sheet rather than running off it */
+.np-sheet__stamp {
+  max-width: 100%;
+  white-space: normal;
+}
+
+/* exhibit labels never break mid-label */
+.ob-system__desig span {
+  white-space: nowrap;
+}
+@media (max-width: 420px) {
+  .ob-system__desig {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}
+
+/* the moon plate on a short phone: keep it clear of the headline */
+@media (max-width: 760px) and (max-height: 700px) {
+  .np-moon {
+    top: 30%;
+    width: min(60vw, 40vh);
+  }
+}
+
+/* stamps land from 2.3x scale; before they land they must not widen the page */
+.np-ledger {
+  overflow-x: clip;
+}
+
+.np-btn {
+  white-space: nowrap;
+}
+@media (max-width: 360px) {
+  .np-bar__name {
+    font-size: 0.88rem;
+  }
+  .np-bar .np-btn--sm {
+    padding-inline: 0.55rem;
+    font-size: 0.6rem;
+  }
+}
+
+/* ============================================================ the way in --
+   The desk photograph, with the front page live on its monitor. The act is
+   scroll room; the stage sticks; the page itself starts under the stage, so
+   by the end of the act the copy on the glass is lying exactly over it. */
+.np-intro {
+  position: relative;
+  z-index: 80;
+  height: 260vh;
+  height: 260svh;
+}
+.np-intro__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--np-paper);
+}
+.np-intro__scene {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  will-change: transform, opacity;
+}
+.np-intro__photo {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  mix-blend-mode: multiply;
+  box-shadow: 0 0 0 1px var(--np-ink);
+}
+.np-intro__screen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  transform-origin: 0 0;
+  background: var(--np-paper);
+  will-change: transform;
+}
+.np-intro__page {
+  position: absolute;
+  top: 0;
+  overflow: hidden;
+  background: var(--np-paper);
+}
+.np-intro__hint {
+  position: absolute;
+  left: var(--sc-gutter);
+  right: var(--sc-gutter);
+  bottom: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-family: var(--np-label);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--np-ink-soft);
+  transition: opacity 400ms var(--np-ease-out);
+}
+.np-intro__hint span:last-child {
+  color: var(--np-red);
+  animation: np-hint 2.2s var(--np-ease) infinite;
+}
+@keyframes np-hint {
+  50% {
+    translate: 0 4px;
+  }
+}
+/* the page begins under the stage */
+.np-mast--after-intro {
+  margin-top: -100vh;
+  margin-top: -100svh;
+}
+/* nothing else of the chrome while the reader is still at the desk */
+html[data-intro='on'] .np-rack {
+  opacity: 0;
+  pointer-events: none;
+}
+.np-rack {
+  transition: opacity 400ms var(--np-ease-out);
+}
