@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# local screenshots and scratch files
+lab/
+flow
+pan
+pin

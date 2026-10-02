@@ -13,14 +13,17 @@ import { useEffect, useRef } from 'react'
  * real page, which is then simply uncovered.
  */
 
-/** The glass of the monitor, in the portrait's own pixels (793 x 793). */
-const IMG = 793
+/** The office plate, and the glass of its monitor, in the image's pixels. */
+const IW = 1024
+const IH = 572
 const GLASS = [
-  [178, 212], // top left
-  [349, 204], // top right
-  [343, 368], // bottom right
-  [182, 380], // bottom left
+  [423, 199], // top left
+  [553, 197], // top right
+  [548, 306], // bottom right
+  [426, 315], // bottom left
 ] as const
+/** How round the glass's corners are, in the same pixels. */
+const GLASS_RADIUS = 7
 
 type Pt = [number, number]
 type M3 = number[]
@@ -89,7 +92,8 @@ export default function DeskIntro({
   const screenRef = useRef<HTMLDivElement>(null)
   const pageRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
-  const hintRef = useRef<HTMLParagraphElement>(null)
+  const hintRef = useRef<HTMLDivElement>(null)
+  const crtRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const act = actRef.current
@@ -123,6 +127,18 @@ export default function DeskIntro({
     }
     const photo = scene.querySelector<HTMLImageElement>('img')
 
+    // a little parallax under a mouse, so the room is a room before it moves
+    const fine = matchMedia('(hover: hover) and (pointer: fine)').matches
+    let mx = 0
+    let my = 0
+    let tmx = 0
+    let tmy = 0
+    const onMove = (ev: PointerEvent) => {
+      tmx = ev.clientX / innerWidth - 0.5
+      tmy = ev.clientY / innerHeight - 0.5
+    }
+    if (fine) addEventListener('pointermove', onMove, { passive: true })
+
     let entered = false
     let raf = 0
     const root = document.documentElement
@@ -141,22 +157,36 @@ export default function DeskIntro({
         onEnter()
       }
 
-      // the photograph, as printed: a square plate in the middle of the sheet
-      // on a tall phone the plate is cropped larger, so the desk and the
-      // monitor carry the screen rather than floating in a margin
-      const S =
-        W < H ? Math.min(H * 0.62, W * 1.45) : Math.min(H * 0.84, W * 0.92)
-      const ox = (W - S) / 2
-      const oy = (H - S) / 2 + H * 0.02
-      const k = S / IMG
+      // the photograph, full bleed: covers the window, and on a narrow screen
+      // slides toward the monitor so the desk is still the subject
+      const k = Math.max(W / IW, H / IH) * 1.06
+      const fw = IW * k
+      const fh = IH * k
+      const gx = ((GLASS[0][0] + GLASS[1][0]) / 2) * k
+      const gy = ((GLASS[0][1] + GLASS[3][1]) / 2) * k
+      const lean = clamp01((1.3 - W / H) / 0.9)
+      const ox = Math.min(
+        0,
+        Math.max(W - fw, lerp((W - fw) / 2, W * 0.5 - gx, lean)),
+      )
+      const oy = Math.min(
+        0,
+        Math.max(H - fh, lerp((H - fh) / 2, H * 0.42 - gy, lean)),
+      )
+      mx += (tmx - mx) * 0.06
+      my += (tmy - my) * 0.06
+      const px = -mx * 18 * (1 - e)
+      const py = -my * 12 * (1 - e)
       if (photo) {
-        photo.style.width = `${S}px`
+        photo.style.width = `${fw}px`
         photo.style.left = `${ox}px`
         photo.style.top = `${oy}px`
       }
       page.style.width = `${W}px`
-      page.style.height = `${H}px`
-      const quad0: Pt[] = GLASS.map(([x, y]) => [ox + x * k, oy + y * k])
+      const quad0: Pt[] = GLASS.map(([x, y]) => [
+        ox + x * k + px,
+        oy + y * k + py,
+      ])
       const qw = quad0[1][0] - quad0[0][0]
       const qh = quad0[3][1] - quad0[0][1]
       const qc: Pt = [
@@ -164,32 +194,40 @@ export default function DeskIntro({
         (quad0[0][1] + quad0[1][1] + quad0[2][1] + quad0[3][1]) / 4,
       ]
 
-      // the camera: zoom on the glass until it more than covers the window
-      const s1 = Math.max(W / qw, H / qh) * 1.12
-      const s = Math.pow(s1, e)
-      const cx = lerp(qc[0], W / 2, e)
-      const cy = lerp(qc[1], H / 2, e)
+      // Two movements. First the camera flies into the glass while the page
+      // stays printed on it, bezel and all. Then, with the room faded out,
+      // the glass straightens and becomes the window.
+      const z = smooth(clamp01(p / 0.8))
+      const pull = smooth(clamp01((p - 0.8) / 0.2))
+
+      // the camera: zoom until the glass spans the window
+      // fit the glass across the window: the whole page stays readable on a
+      // phone too, and the pull then opens it to the full height
+      const s1 = W / qw
+      const s = Math.pow(s1, z)
+      const cx = lerp(qc[0], W / 2, z)
+      const cy = lerp(qc[1], H / 2, z)
       const tx = cx - s * qc[0]
       const ty = cy - s * qc[1]
-      scene.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${s})`
-      scene.style.opacity = String(1 - clamp01((p - 0.82) / 0.14))
+      scene.style.transform = `translate3d(${tx + s * px}px, ${ty + s * py}px, 0) scale(${s})`
+      scene.style.opacity = String(1 - clamp01((p - 0.78) / 0.14))
 
       // the glass, where the camera has carried it
       const quad = quad0.map(([x, y]) => [tx + s * x, ty + s * y] as Pt)
 
-      // the screen's crop: the glass is near square, the window is not, so
-      // the copy is cropped to the glass's shape and opens out to the window
+      // The screen box has the glass's own proportions, so nothing on it is
+      // squeezed. The page inside keeps the window's width and is scaled to
+      // fit the glass across, the way a monitor shows a whole page; it runs
+      // on below the fold. Both open out to the window on the pull.
       const A = qw / qh
-      const V = W / H
-      let wc = W
-      let hc = H
-      if (V > A * 1.45) wc = H * A * 1.45
-      else if (V < A / 1.25) hc = (W / A) * 1.25
-      wc = lerp(wc, W, e)
-      hc = lerp(hc, H, e)
+      const wide = W / H > A
+      const wc = lerp(wide ? H * A : W, W, pull)
+      const hc = lerp(wide ? H : W / A, H, pull)
+      const ps = wc / W
       screen.style.width = `${wc}px`
       screen.style.height = `${hc}px`
-      page.style.left = `${(-(W - wc) / 2).toFixed(2)}px`
+      page.style.height = `${Math.max(H, hc / ps).toFixed(1)}px`
+      page.style.transform = `scale(${ps})`
 
       // where the real page sits right now: the copy lands there
       const top = anchor ? anchor.getBoundingClientRect().top : 0
@@ -199,23 +237,42 @@ export default function DeskIntro({
         [W, top + H],
         [0, top + H],
       ]
-      const pull = Math.pow(clamp01((p - 0.5) / 0.5), 1.6)
       const target = quad.map(
         ([x, y], i) =>
           [lerp(x, land[i][0], pull), lerp(y, land[i][1], pull)] as Pt,
       )
       screen.style.transform = project(wc, hc, target)
-      screen.style.borderRadius = `${lerp(14, 0, e)}px`
+
+      // how small the screen is drawn right now. Scanlines are spaced in
+      // drawn pixels, not page pixels, or at the desk they shrink below a
+      // pixel and alias into rings
+      const drawn = Math.hypot(
+        target[1][0] - target[0][0],
+        target[1][1] - target[0][1],
+      )
+      const zoom = Math.max(drawn / wc, 0.01)
+      screen.style.setProperty('--scan', `${(3 / zoom).toFixed(2)}px`)
+
+      // the glass's rounded corners, carried by the camera: a fixed radius in
+      // the drawing, so in screen-box units it is divided by the zoom. They
+      // square off as the glass becomes the window.
+      const radius = ((GLASS_RADIUS * k * s) / zoom) * (1 - pull)
+      screen.style.borderRadius = `${radius.toFixed(2)}px`
 
       // the stage steps aside once the copy is over the page
       stage.style.opacity = String(1 - clamp01((p - 0.97) / 0.03))
       stage.style.visibility = p >= 1 ? 'hidden' : 'visible'
       if (hintRef.current)
-        hintRef.current.style.opacity = String(1 - clamp01(p * 5))
+        hintRef.current.style.opacity = String(1 - clamp01(p * 4))
+      // the tube: dim, lined and curved at the desk; clear by the time the
+      // camera is close enough to read it
+      if (crtRef.current)
+        crtRef.current.style.opacity = String(1 - clamp01((p - 0.15) / 0.45))
     }
     raf = requestAnimationFrame(frame)
     return () => {
       cancelAnimationFrame(raf)
+      removeEventListener('pointermove', onMove)
       delete root.dataset.intro
       page.replaceChildren()
     }
@@ -227,20 +284,36 @@ export default function DeskIntro({
         <div className="np-intro__scene" ref={sceneRef}>
           <img
             className="np-intro__photo"
-            src="/plates/portrait.webp"
-            width={IMG}
-            height={IMG}
+            src="/plates/office.webp"
+            width={IW}
+            height={IH}
             alt=""
             fetchPriority="high"
           />
         </div>
         <div className="np-intro__screen" ref={screenRef}>
           <div className="np-intro__page" ref={pageRef} inert />
+          <div className="np-intro__crt" ref={crtRef} />
         </div>
-        <p className="np-intro__hint" ref={hintRef}>
-          <span>Fig. 0. The desk, Baku</span>
-          <span>Scroll to go in</span>
-        </p>
+
+        {/* the plate, framed and captioned like a front-page photograph */}
+        <div className="np-intro__frame" ref={hintRef}>
+          <p className="np-intro__mast">
+            <span>Late final</span>
+            <b>The Naghiyev Observer</b>
+            <span>Baku, after hours</span>
+          </p>
+          <div className="np-intro__foot">
+            <p className="np-intro__cap">
+              <b>Fig. 0.</b> The night desk. The subject at work, the edition
+              already on his screen.
+            </p>
+            <p className="np-intro__cue">
+              Scroll to go in
+              <span aria-hidden="true" />
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   )
