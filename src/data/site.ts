@@ -171,3 +171,28 @@ export const wire = [
   'Three languages, 1,529 typed keys',
   'The desk is open for select work in 2026',
 ]
+
+/** The first projects, built by hand before AI tools, as they were published. */
+export const backIssues = [
+  {
+    name: 'Worldcom',
+    href: 'https://worldcom.vercel.app/',
+    shot: '/plates/work/worldcom.jpg',
+    date: new Date(2023, 11, 20),
+    note: 'Pick a place on the map and read its weather. Light and dark editions, °C or °F.',
+  },
+  {
+    name: 'Movie App',
+    href: 'https://movie-app-kgd6.vercel.app/',
+    shot: '/plates/work/movie-app.jpg',
+    date: new Date(2024, 0, 14),
+    note: 'A film and series catalogue: trending, popular, search, accounts and a list of your own.',
+  },
+  {
+    name: 'Metailcom',
+    href: 'https://metailcom.vercel.app/',
+    shot: '/plates/work/metailcom.jpg',
+    date: new Date(2024, 1, 14),
+    note: 'A recipe book for meals and cocktails: search, trending dishes, favourites and a basket.',
+  },
+]

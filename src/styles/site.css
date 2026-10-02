@@ -6,9 +6,11 @@
    restyles a device; this is markup that belongs to this page alone.
    ========================================================================== */
 
+/* not inherited: the engine writes it straight onto the few elements that
+   read it ([data-sc-p]), so a change does not restyle a whole section */
 @property --sc-p {
   syntax: '<number>';
-  inherits: true;
+  inherits: false;
   initial-value: 0;
 }
 @property --ob-t {
@@ -2640,14 +2642,8 @@ body {
 .np-intro__scene {
   position: absolute;
   inset: 0;
-  transform-origin: 0 0;
-  will-change: transform, opacity;
-}
-.np-intro__photo {
-  position: absolute;
-  max-width: none;
-  height: auto;
-  mix-blend-mode: multiply;
+  width: 100%;
+  height: 100%;
 }
 .np-intro__screen {
   position: absolute;
@@ -2656,7 +2652,6 @@ body {
   overflow: hidden;
   transform-origin: 0 0;
   background: var(--np-paper);
-  will-change: transform;
 }
 .np-intro__page {
   position: absolute;
@@ -2844,4 +2839,382 @@ html[data-intro='on'] .np-rack {
 .np-intro__page .np-caret,
 .np-intro__page .np-desk-caret {
   display: none;
+}
+
+/* one column on the left of the moon: the back issues above, the chapter
+   head below, in flow, so they can never run into each other */
+.np-special__col {
+  position: absolute;
+  z-index: 2;
+  left: var(--sc-gutter);
+  top: clamp(5.5rem, 12vh, 7.5rem);
+  bottom: clamp(2.5rem, 8vh, 5rem);
+  width: min(30rem, 38vw);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.np-special__col .np-board-wrap,
+.np-special__col .np-special__read {
+  position: static;
+  width: auto;
+  max-width: none;
+}
+.np-special__col .np-special__title {
+  font-size: clamp(2.1rem, 1rem + 2.6vw, 3.8rem);
+}
+.np-special__col .np-special__note {
+  font-size: clamp(1rem, 0.9rem + 0.35vw, 1.2rem);
+}
+@media (max-height: 1040px) and (min-width: 1024px) {
+  .np-special__col .np-special__note {
+    display: none;
+  }
+}
+@media (max-width: 1359px) {
+  .np-special__col {
+    bottom: clamp(6rem, 13vh, 8rem);
+  }
+}
+/* tablet and phone: the moon takes the top, the column the bottom */
+@media (max-width: 1023px) {
+  .np-special__col {
+    top: auto;
+    right: var(--sc-gutter);
+    width: auto;
+    justify-content: flex-end;
+  }
+  .np-moon {
+    top: 27%;
+    width: min(62vw, 36vh);
+  }
+}
+
+/* ========================================================== the blackboard --
+   The first projects, chalked up beside the moon and wiped clean by scroll. */
+.np-board-wrap {
+  display: grid;
+  gap: 0.8rem;
+  color: var(--np-night-ink);
+}
+/* the head: the claim is the headline, not a label */
+.np-board__head {
+  display: grid;
+  gap: 0.35rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 3px double
+    color-mix(in oklab, var(--np-night-ink) 60%, transparent);
+}
+.np-board__kicker {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-family: var(--np-label);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--np-night-soft);
+}
+.np-board__title {
+  margin: 0;
+  font-family: var(--np-display);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 1.3rem + 2.4vw, 3.6rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--np-night-ink);
+}
+.np-board__title em {
+  font-family: var(--np-text);
+  font-style: italic;
+  color: #e2603f;
+  /* the word that matters, underlined twice by the sub-editor */
+  text-decoration: underline double #e2603f;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.12em;
+}
+.np-board__sub {
+  margin: 0;
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: color-mix(in oklab, var(--np-night-ink) 70%, transparent);
+}
+.np-board__count {
+  font-family: 'Special Elite', 'Courier New', monospace;
+  letter-spacing: 0.08em;
+}
+
+/* the board, engraved: an ink frame ruled in paper, hatched like the plates */
+.np-board {
+  position: relative;
+  padding: 0.6rem;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--np-night-ink) 30%, transparent) 0 1px,
+      transparent 1px 4px
+    ),
+    var(--np-night);
+  border: 1.5px solid var(--np-night-ink);
+  outline: 1px solid var(--np-night-ink);
+  outline-offset: 4px;
+  box-shadow: 0 22px 44px -24px rgba(0, 0, 0, 0.9);
+}
+.np-board__slate {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #1a1916;
+  border: 1px solid var(--np-night-ink);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.7);
+}
+.np-board__slate > img,
+.np-board__missing {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  opacity: 0;
+  /* the screenshots print in the paper's own black and white */
+  filter: grayscale(1) contrast(1.12);
+}
+.np-board__slate > [data-on='true'] {
+  opacity: 1;
+}
+.np-board__missing {
+  display: grid;
+  place-content: center;
+  gap: 0.4rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: #22211d;
+  font-family: 'Caveat', 'Segoe Print', cursive;
+  color: rgba(240, 236, 226, 0.8);
+}
+.np-board__missing b {
+  font-size: 2rem;
+  font-weight: 700;
+}
+.np-board__slate > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* the eraser, as an engraving: paper block, ink outline, hatched felt */
+.np-board__eraser {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: clamp(4.6rem, 7vw, 6.8rem);
+  height: clamp(1.9rem, 2.8vw, 2.7rem);
+  border: 1.5px solid var(--np-ink);
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0 58%,
+      var(--np-ink) 58% calc(58% + 1.5px),
+      transparent 0
+    ),
+    repeating-linear-gradient(-45deg, var(--np-ink) 0 1px, transparent 1px 3px)
+      0 100% / 100% 40% no-repeat,
+    var(--np-paper);
+  box-shadow:
+    3px 3px 0 var(--np-ink),
+    0 8px 14px -6px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  transition: opacity 250ms var(--np-ease-out);
+}
+.np-board__eraser::after {
+  content: 'ERASER';
+  position: absolute;
+  inset: 0 0 42%;
+  display: grid;
+  place-items: center;
+  font-family: var(--np-label);
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  color: var(--np-ink);
+}
+
+/* the chalk ledge: an ink rule, two sticks of chalk, one of them red */
+.np-board__tray {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -0.8rem;
+  height: 0.55rem;
+  background: var(--np-night);
+  border: 1.5px solid var(--np-night-ink);
+}
+.np-board__tray i {
+  position: absolute;
+  bottom: 0.35rem;
+  width: 2.2rem;
+  height: 0.38rem;
+  background: var(--np-night-ink);
+  border: 1px solid var(--np-night);
+}
+.np-board__tray i:first-child {
+  left: 12%;
+  rotate: -4deg;
+}
+.np-board__tray i:last-child {
+  left: 28%;
+  width: 1.3rem;
+  background: #e2603f;
+  rotate: 3deg;
+}
+
+/* the stamp: struck on the board's corner each time a project comes up */
+.np-board__stamp {
+  position: absolute;
+  z-index: 3;
+  top: -1.4rem;
+  right: -1.2rem;
+  display: grid;
+  justify-items: center;
+  padding: 0.45rem 0.8rem 0.35rem;
+  border: 3px double #e2603f;
+  background: color-mix(in oklab, var(--np-night) 70%, transparent);
+  color: #e2603f;
+  font-family: var(--np-label);
+  rotate: 9deg;
+  pointer-events: none;
+  animation: np-stamp 520ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+.np-board__stamp b {
+  font-size: clamp(1.1rem, 0.8rem + 0.8vw, 1.5rem);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.np-board__stamp small {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+@keyframes np-stamp {
+  from {
+    opacity: 0;
+    scale: 2.2;
+    rotate: -6deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .np-board__stamp {
+    animation: none;
+  }
+}
+
+/* the caption under the board, swapped with each project */
+.np-board__cap {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.4rem;
+  color: inherit;
+  text-decoration: none;
+  animation: np-cap-in 600ms var(--np-ease) both;
+}
+@keyframes np-cap-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+.np-board__date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--np-night-soft);
+}
+.np-board__moon {
+  width: 1rem;
+  height: 1rem;
+}
+.np-board__moon-dark {
+  fill: #2a2722;
+}
+.np-board__moon-lit {
+  fill: var(--np-night-ink);
+}
+.np-board__moon-rim {
+  fill: none;
+  stroke: color-mix(in oklab, var(--np-night-ink) 55%, transparent);
+  stroke-width: 0.8;
+}
+.np-board__name {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  width: fit-content;
+  font-family: var(--np-display);
+  font-size: clamp(1.5rem, 1.1rem + 1vw, 2.1rem);
+  line-height: 1.05;
+  background: linear-gradient(#e2603f, #e2603f) 0 100% / 0% 2px no-repeat;
+  transition: background-size 600ms var(--np-ease);
+}
+.np-board__name i {
+  font-family: var(--np-label);
+  font-style: normal;
+  font-size: 0.5em;
+  color: #e2603f;
+  transition: translate 500ms var(--np-ease);
+}
+.np-board__note {
+  font-style: italic;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: color-mix(in oklab, var(--np-night-ink) 72%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .np-board__cap:hover .np-board__name {
+    background-size: 100% 2px;
+  }
+  .np-board__cap:hover .np-board__name i {
+    translate: 0.2rem -0.2rem;
+  }
+}
+.np-board__cap:focus-visible {
+  outline: 2px solid #e2603f;
+  outline-offset: 4px;
+}
+@media (max-width: 1023px) {
+  .np-board__sub,
+  .np-board__note {
+    display: none;
+  }
+  .np-board__name {
+    font-size: 1.3rem;
+  }
+}
+@media (max-width: 1023px) and (max-height: 900px) {
+  .np-special__col .np-special__read {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .np-board__cap {
+    animation: none;
+  }
+}
+
+/* on a short screen the board is the chapter's head; the line under it goes */
+@media (min-width: 1024px) and (max-height: 880px) {
+  .np-special__col .np-special__read {
+    display: none;
+  }
 }

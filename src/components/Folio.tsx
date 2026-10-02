@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { docTop, onMeasure, viewY } from '@/lib/measure'
 import { useActiveSection } from '@/lib/useActiveSection'
 
 /**
@@ -28,18 +29,18 @@ export default function Folio({
   const [night, setNight] = useState(false)
 
   useEffect(() => {
+    let nights: [number, number][] = []
+    const stopMeasure = onMeasure(() => {
+      nights = [
+        ...document.querySelectorAll<HTMLElement>('[data-np-night]'),
+      ].map((el) => [docTop(el), el.offsetHeight] as [number, number])
+    })
     let raf = 0
     // the bar reads whatever sheet sits directly under it
     const read = () => {
       raf = 0
-      let dark = false
-      document
-        .querySelectorAll<HTMLElement>('[data-np-night]')
-        .forEach((el) => {
-          const b = el.getBoundingClientRect()
-          if (b.top <= 30 && b.bottom >= 30) dark = true
-        })
-      setNight(dark)
+      const line = viewY() + 30
+      setNight(nights.some(([top, hgt]) => top <= line && top + hgt >= line))
     }
     const queue = () => {
       if (!raf) raf = requestAnimationFrame(read)
@@ -51,6 +52,7 @@ export default function Folio({
       cancelAnimationFrame(raf)
       removeEventListener('scroll', queue)
       removeEventListener('resize', queue)
+      stopMeasure()
     }
   }, [])
 

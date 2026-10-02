@@ -35,3 +35,9 @@ export function dateline(at = new Date()) {
     })
     .replace(',', '')
 }
+
+/** Where the moon was in its cycle on a date: 0 new, 0.5 full, back to 1. */
+export function moonAge(at: Date) {
+  const days = (at.getTime() - KNOWN_NEW) / 86_400_000
+  return (((days % SYNODIC) + SYNODIC) % SYNODIC) / SYNODIC
+}

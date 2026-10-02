@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { docTop, onMeasure, viewY } from '@/lib/measure'
 
 /**
  * Which section the reader is on: the last one whose top has passed the middle
@@ -11,14 +12,22 @@ export function useActiveSection(ids: string[]) {
 
   useEffect(() => {
     const list = key.split('|')
+    // section tops in document coordinates, measured when layout changes
+    let tops: number[] = []
     let raf = 0
-    const pick = () => {
-      raf = 0
-      const mid = innerHeight * 0.5
-      let index = 0
-      list.forEach((id, i) => {
+    const stopMeasure = onMeasure(() => {
+      tops = list.map((id) => {
         const el = document.getElementById(id)
-        if (el && el.getBoundingClientRect().top <= mid) index = i
+        return el ? docTop(el) : Infinity
+      })
+      pick()
+    })
+    function pick() {
+      raf = 0
+      const mid = viewY() + innerHeight * 0.5
+      let index = 0
+      tops.forEach((top, i) => {
+        if (top <= mid) index = i
       })
       setActive(index)
     }
@@ -32,6 +41,7 @@ export function useActiveSection(ids: string[]) {
       cancelAnimationFrame(raf)
       removeEventListener('scroll', queue)
       removeEventListener('resize', queue)
+      stopMeasure()
     }
   }, [key])
 

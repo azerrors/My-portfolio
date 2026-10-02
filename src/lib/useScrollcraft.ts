@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import '@/engine/scrollcraft.js'
+import { onMeasure } from '@/lib/measure'
 
 /**
  * Mounts the scrollcraft runtime over React's markup.
@@ -25,8 +26,8 @@ export function useScrollcraft(ref: React.RefObject<HTMLElement | null>) {
     // Fonts change line boxes and therefore act heights. The engine relays out
     // on document.fonts.ready itself, but a late webfont on a slow connection
     // can land after that, so one more pass on load costs nothing.
-    const relayout = () => api.layout()
-    addEventListener('load', relayout)
-    return () => removeEventListener('load', relayout)
+    // The engine caches every size it needs at layout time, so it has to be
+    // told when the page changes height: an image landing, a font swap.
+    return onMeasure(() => api.layout())
   }, [ref])
 }

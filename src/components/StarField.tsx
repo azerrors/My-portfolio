@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { docTop, onMeasure, viewY } from '@/lib/measure'
 
 /**
  * The signature move: the pointer is a gravitational mass.
@@ -156,17 +157,51 @@ export default function StarField({
       }
     }
 
+    // The night sheets are opaque and cover the field completely; while one
+    // fills the window there is nothing of the sky to draw.
+    let nights: [number, number][] = []
+    const stopMeasure = onMeasure(() => {
+      nights = [
+        ...document.querySelectorAll<HTMLElement>('[data-np-night]'),
+      ].map((el) => [docTop(el), el.offsetHeight] as [number, number])
+    })
+    const covered = () => {
+      const y = viewY()
+      const vh = innerHeight
+      return nights.some(([top, hgt]) => top <= y && top + hgt >= y + vh)
+    }
+
     let raf = 0
+    let lastDraw = 0
+    let lastMove = -1e9
+    let hidden = false
     function frame(t: number) {
+      raf = requestAnimationFrame(frame)
       px += (tx - px) * 0.14
       py += (ty - py) * 0.14
       mass += (targetMass - mass) * 0.07
+      if (covered()) {
+        if (!hidden) {
+          ctx!.clearRect(0, 0, w, h)
+          hidden = true
+        }
+        return
+      }
+      // with the pointer at rest the only motion is a slow twinkle, which
+      // reads the same at 15 frames a second; full rate only while it pulls
+      const settling =
+        Math.abs(tx - px) + Math.abs(ty - py) > 0.5 ||
+        Math.abs(targetMass - mass) > 0.002
+      const pulling = settling || t - lastMove < 300
+      if (!pulling && !hidden && t - lastDraw < 66) return
+      hidden = false
+      lastDraw = t
       draw(t)
-      raf = requestAnimationFrame(frame)
     }
 
     function onMove(e: PointerEvent) {
       if (e.pointerType !== 'mouse') return
+      lastMove = performance.now()
       if (px < -9000) {
         px = e.clientX
         py = e.clientY
@@ -208,6 +243,7 @@ export default function StarField({
 
     return () => {
       cancelAnimationFrame(raf)
+      stopMeasure()
       removeEventListener('resize', resize)
       removeEventListener('pointermove', onMove)
       document.removeEventListener('pointerleave', onLeave)

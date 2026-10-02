@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { worlds } from '@/data/site'
+import { docTop, nearView, onMeasure, viewY } from '@/lib/measure'
 
 /**
  * Chapter III, the peak. A system chart drawn from scroll.
@@ -210,6 +211,9 @@ export default function SystemChart({
     }
 
     function frame(t: number) {
+      raf = requestAnimationFrame(frame)
+      // nothing to turn while the chapter is out of sight
+      if (!nearView(actTop, actH, 0.2)) return
       const p = progress()
 
       // The camera opens: nearly edge on at the top of the act, tilted by the
@@ -469,16 +473,13 @@ export default function SystemChart({
           )
 
           // leader line to the plate, the way a callout runs on a drawing
-          const plate = plateRef.current
-          if (plate) {
-            const pb = plate.getBoundingClientRect()
-            const cb = canvas!.getBoundingClientRect()
-            const ax = pb.right - cb.left
+          if (plateBox.right > plateBox.left) {
+            const ax = plateBox.right
             // enter the plate at the height of the world, clamped to stay on
             // its edge: an L, the way a callout runs on a drawing
             const ay = Math.min(
-              Math.max(y, pb.top - cb.top + 20),
-              pb.bottom - cb.top - 20,
+              Math.max(y, plateBox.top + 20),
+              plateBox.bottom - 20,
             )
             if (ax < x - r - 60) {
               ctx!.strokeStyle = ink(0.42)
@@ -497,15 +498,43 @@ export default function SystemChart({
           }
         }
       }
-      raf = requestAnimationFrame(frame)
     }
 
+    // The canvas fills the pinned stage, so its top is the stage's, worked
+    // out from the act's cached position rather than measured per event.
+    function stageTop() {
+      const at = actTop - viewY()
+      return Math.min(Math.max(at, 0), at + actH - innerHeight)
+    }
     function onMove(e: PointerEvent) {
       if (e.pointerType !== 'mouse') return
-      const box = canvas!.getBoundingClientRect()
-      mx = e.clientX - box.left
-      my = e.clientY - box.top
+      mx = e.clientX
+      my = e.clientY - stageTop()
     }
+
+    // where the act sits, and the plate relative to the canvas: both are in
+    // the same pinned stage, so the offset never changes while it moves
+    let actTop = 0
+    let actH = 0
+    let plateBox = { left: 0, right: 0, top: 0, bottom: 0 }
+    const measure = () => {
+      actTop = docTop(act!)
+      actH = act!.offsetHeight
+      const plate = plateRef.current
+      if (plate) {
+        const pb = plate.getBoundingClientRect()
+        const cb = canvas!.getBoundingClientRect()
+        plateBox = {
+          left: pb.left - cb.left,
+          right: pb.right - cb.left,
+          top: pb.top - cb.top,
+          bottom: pb.bottom - cb.top,
+        }
+      }
+    }
+    const stopMeasure = onMeasure(measure)
+    const plateRo = new ResizeObserver(measure)
+    if (plateRef.current) plateRo.observe(plateRef.current)
 
     let raf = 0
     resize()
@@ -518,6 +547,8 @@ export default function SystemChart({
     return () => {
       cancelAnimationFrame(raf)
       ro.disconnect()
+      plateRo.disconnect()
+      stopMeasure()
       removeEventListener('resize', resize)
       removeEventListener('pointermove', onMove)
     }

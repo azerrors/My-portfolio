@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { onMeasure, viewY } from '@/lib/measure'
 
 /**
  * The desk under the paper. Typewritten notes, index cards, a torn notebook
@@ -251,14 +252,14 @@ export default function DeskBackdrop() {
     if (!el) return
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
     let raf = 0
+    let max = 1
+    const stop = onMeasure(() => {
+      max = Math.max(document.documentElement.scrollHeight - innerHeight, 1)
+    })
     const drift = () => {
       raf = 0
-      const max = Math.max(
-        document.documentElement.scrollHeight - innerHeight,
-        1,
-      )
       // slower than the page, which is what puts the desk underneath it
-      el.style.transform = `translate3d(0, ${(-(scrollY / max) * 45).toFixed(3)}vh, 0)`
+      el.style.transform = `translate3d(0, ${(-(viewY() / max) * 45).toFixed(3)}vh, 0)`
     }
     const queue = () => {
       if (!raf) raf = requestAnimationFrame(drift)
@@ -270,6 +271,7 @@ export default function DeskBackdrop() {
       cancelAnimationFrame(raf)
       removeEventListener('scroll', queue)
       removeEventListener('resize', queue)
+      stop()
     }
   }, [])
 

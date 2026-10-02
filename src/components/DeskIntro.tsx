@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { docTop, onMeasure, viewY } from '@/lib/measure'
 
 /**
  * The way in. The edition opens on its own photograph: the subject at his
@@ -88,7 +89,7 @@ export default function DeskIntro({
   onEnter: () => void
 }) {
   const actRef = useRef<HTMLElement>(null)
-  const sceneRef = useRef<HTMLDivElement>(null)
+  const sceneRef = useRef<HTMLCanvasElement>(null)
   const screenRef = useRef<HTMLDivElement>(null)
   const pageRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
@@ -125,7 +126,18 @@ export default function DeskIntro({
         .forEach((n) => n.setAttribute('tabindex', '-1'))
       page.appendChild(copy)
     }
-    const photo = scene.querySelector<HTMLImageElement>('img')
+    // The room is drawn, not stretched. Scaling a photo layer ten times over
+    // with CSS makes the GPU hold a raster far bigger than the window, and
+    // on the way back up it drops tiles and leaves holes. A canvas the size
+    // of the window, redrawn at the camera's scale, never asks for more.
+    const ctx = scene.getContext('2d')
+    if (!ctx) return
+    const photo = new Image()
+    photo.src = '/plates/office.webp'
+    photo.decoding = 'async'
+    let cw = 0
+    let ch = 0
+    let dpr = 1
 
     // a little parallax under a mouse, so the room is a room before it moves
     const fine = matchMedia('(hover: hover) and (pointer: fine)').matches
@@ -139,16 +151,33 @@ export default function DeskIntro({
     }
     if (fine) addEventListener('pointermove', onMove, { passive: true })
 
+    // where the act and the real front page sit, measured when layout changes
+    let actTop = 0
+    let actH = 0
+    let anchorTop = 0
+    const stopMeasure = onMeasure(() => {
+      actTop = docTop(act)
+      actH = act.offsetHeight
+      anchorTop = anchor ? docTop(anchor) : actTop + actH
+    })
+
     let entered = false
     let raf = 0
     const root = document.documentElement
 
     const frame = () => {
       raf = requestAnimationFrame(frame)
+      // once the reader is well past the intro there is nothing to draw
+      const sy = viewY()
+      if (actTop + actH - sy < -innerHeight * 0.5) {
+        if (stage.style.opacity !== '0') stage.style.opacity = '0'
+        root.dataset.intro = 'off'
+        return
+      }
       const W = innerWidth
       const H = innerHeight
-      const travel = Math.max(act.offsetHeight - H, 1)
-      const p = clamp01(-act.getBoundingClientRect().top / travel)
+      const travel = Math.max(actH - H, 1)
+      const p = clamp01((sy - actTop) / travel)
       const e = smooth(p)
 
       root.dataset.intro = p < 0.995 ? 'on' : 'off'
@@ -177,11 +206,6 @@ export default function DeskIntro({
       my += (tmy - my) * 0.06
       const px = -mx * 18 * (1 - e)
       const py = -my * 12 * (1 - e)
-      if (photo) {
-        photo.style.width = `${fw}px`
-        photo.style.left = `${ox}px`
-        photo.style.top = `${oy}px`
-      }
       page.style.width = `${W}px`
       const quad0: Pt[] = GLASS.map(([x, y]) => [
         ox + x * k + px,
@@ -209,7 +233,26 @@ export default function DeskIntro({
       const cy = lerp(qc[1], H / 2, z)
       const tx = cx - s * qc[0]
       const ty = cy - s * qc[1]
-      scene.style.transform = `translate3d(${tx + s * px}px, ${ty + s * py}px, 0) scale(${s})`
+      // the room, at the camera: newsprint first, the drawing multiplied in
+      const nd = Math.min(devicePixelRatio || 1, 2)
+      if (cw !== W || ch !== H || dpr !== nd) {
+        cw = W
+        ch = H
+        dpr = nd
+        scene.width = Math.round(W * dpr)
+        scene.height = Math.round(H * dpr)
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.fillStyle = '#f2ede2'
+      ctx.fillRect(0, 0, W, H)
+      if (photo.complete && photo.naturalWidth) {
+        ctx.globalCompositeOperation = 'multiply'
+        ctx.imageSmoothingQuality = 'high'
+        ctx.translate(tx + s * px, ty + s * py)
+        ctx.scale(s, s)
+        ctx.drawImage(photo, ox, oy, fw, fh)
+      }
       scene.style.opacity = String(1 - clamp01((p - 0.78) / 0.14))
 
       // the glass, where the camera has carried it
@@ -230,7 +273,7 @@ export default function DeskIntro({
       page.style.transform = `scale(${ps})`
 
       // where the real page sits right now: the copy lands there
-      const top = anchor ? anchor.getBoundingClientRect().top : 0
+      const top = anchorTop - sy
       const land: Pt[] = [
         [0, top],
         [W, top],
@@ -261,7 +304,6 @@ export default function DeskIntro({
 
       // the stage steps aside once the copy is over the page
       stage.style.opacity = String(1 - clamp01((p - 0.97) / 0.03))
-      stage.style.visibility = p >= 1 ? 'hidden' : 'visible'
       if (hintRef.current)
         hintRef.current.style.opacity = String(1 - clamp01(p * 4))
       // the tube: dim, lined and curved at the desk; clear by the time the
@@ -273,6 +315,7 @@ export default function DeskIntro({
     return () => {
       cancelAnimationFrame(raf)
       removeEventListener('pointermove', onMove)
+      stopMeasure()
       delete root.dataset.intro
       page.replaceChildren()
     }
@@ -281,16 +324,7 @@ export default function DeskIntro({
   return (
     <section className="np-intro" ref={actRef} aria-hidden="true">
       <div className="np-intro__stage" ref={stageRef}>
-        <div className="np-intro__scene" ref={sceneRef}>
-          <img
-            className="np-intro__photo"
-            src="/plates/office.webp"
-            width={IW}
-            height={IH}
-            alt=""
-            fetchPriority="high"
-          />
-        </div>
+        <canvas className="np-intro__scene" ref={sceneRef} />
         <div className="np-intro__screen" ref={screenRef}>
           <div className="np-intro__page" ref={pageRef} inert />
           <div className="np-intro__crt" ref={crtRef} />

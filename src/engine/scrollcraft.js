@@ -287,7 +287,7 @@
     var playheads = [];
     var scrollEls = [];
     var vh = innerHeight, vw = innerWidth;
-    var y = 0, needsLayout = true;
+    var y = 0, needsLayout = true, docH = 0;
     var progressBar = root.querySelector('[data-sc-progress]');
     var docEl = document.documentElement;
 
@@ -351,6 +351,10 @@
       }
 
       // horizontal rail
+      // elements that read --sc-p in CSS get it written directly. The act's own
+      // copy does not cascade, so a write restyles a handful of nodes rather
+      // than the act's whole subtree.
+      act.listeners = Array.prototype.slice.call(el.querySelectorAll('[data-sc-p]'));
       act.rail = el.querySelector('[data-sc-pan]');
       if (act.rail) act.railExtra = parseFloat(act.rail.getAttribute('data-sc-pan')) || 0;
 
@@ -525,7 +529,11 @@
         var r = a.el.getBoundingClientRect();
         a.top = r.top + scrollY;
         a.height = r.height;
+        // measured here, once, not on every frame: reading a size inside the
+        // per-frame loop forces a layout after the loop's own style writes
+        if (a.rail) a.railW = a.rail.scrollWidth;
       });
+      docH = document.documentElement.scrollHeight || 0;
       if (acts.length) {
         acts.forEach(function (a) {
           if (a.seq && a.seq.el) {
@@ -773,7 +781,7 @@
     function read() {
       y = scrollY || pageYOffset;
       var driftA = null, driftB = null, driftT = 0;
-      var maxY = Math.max((document.documentElement.scrollHeight || 0) - vh, 1);
+      var maxY = Math.max(docH - vh, 1);
 
       for (var i = 0; i < acts.length; i++) {
         var a = acts[i];
@@ -807,7 +815,14 @@
           a.vp = a.dwell ? dwell(vraw, a.dwell) : vraw;
         }
         a.live = (y > a.top - vh * 1.25) && (y < a.top + a.height + vh * 1.25);
-        a.el.style.setProperty('--sc-p', a.p.toFixed(4));
+        // --sc-p inherits, so every write restyles the act's whole subtree;
+        // only write when it actually moved
+        var ps = a.p.toFixed(4);
+        if (ps !== a.ps) {
+          a.ps = ps;
+          a.el.style.setProperty('--sc-p', ps);
+          for (var li = 0; li < a.listeners.length; li++) a.listeners[li].style.setProperty('--sc-p', ps);
+        }
 
         // Fetch earlier than we drive. A 1080p clip is megabytes, and a reader
         // who scrolls briskly will otherwise arrive at a stage that is still
@@ -822,7 +837,7 @@
 
         // horizontal rail
         if (a.rail) {
-          var over = a.rail.scrollWidth - vw;
+          var over = (a.railW || 0) - vw;
           if (over > 0) {
             var extra = over * (a.railExtra || 0);
             a.rail.style.transform = 'translate3d(' + (-(over + extra) * a.p).toFixed(2) + 'px,0,0)';

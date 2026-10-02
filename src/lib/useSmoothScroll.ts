@@ -1,6 +1,7 @@
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import { useEffect } from 'react'
+import { setViewY } from '@/lib/measure'
 
 /**
  * Inertial scrolling for the whole page.
@@ -23,6 +24,8 @@ export function useSmoothScroll() {
       // the running head is sticky, so a jump has to land below it
       anchors: { offset: -64 },
     })
+    // hand the position to everything else before the scroll event fires
+    lenis.on('scroll', (l: Lenis) => setViewY(l.animatedScroll))
     return () => lenis.destroy()
   }, [])
 }

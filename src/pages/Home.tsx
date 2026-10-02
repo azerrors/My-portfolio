@@ -1,5 +1,6 @@
 import { MotionConfig, motion, type Variants } from 'framer-motion'
 import { useCallback, useMemo, useRef, useState } from 'react'
+import ChalkBoard from '@/components/ChalkBoard'
 import { ExhibitIndex, ExhibitPlate } from '@/components/Exhibits'
 import Folio, { type Section } from '@/components/Folio'
 import { Correction, HandNote } from '@/components/Handwriting'
@@ -11,6 +12,7 @@ import PagePlate from '@/components/PagePlate'
 import StarField from '@/components/StarField'
 import SystemChart from '@/components/SystemChart'
 import {
+  backIssues,
   bands,
   education,
   entries,
@@ -216,6 +218,7 @@ export default function Home() {
                   <figure className="np-photo np-photo--portrait">
                     <div className="np-photo__print">
                       <img
+                        data-sc-p
                         src="/plates/portrait.webp"
                         width={793}
                         height={793}
@@ -297,15 +300,15 @@ export default function Home() {
               id="ignition"
               className="np-special"
               data-sc-act="pin"
-              data-sc-span="2.6"
+              data-sc-span="4.2"
             >
               <div className="np-special__stage" data-sc-stage>
-                <p className="np-special__over" aria-hidden="true">
+                <p className="np-special__over" aria-hidden="true" data-sc-p>
                   <span>Special report</span>
                   <span>Fig. 2, the full moon</span>
                 </p>
-                <div className="np-special__frame">
-                  <div className="np-moon" aria-hidden="true">
+                <div className="np-special__frame" data-sc-p>
+                  <div className="np-moon" aria-hidden="true" data-sc-p>
                     <img
                       src="/plates/moon.webp"
                       width={770}
@@ -315,23 +318,29 @@ export default function Home() {
                       decoding="async"
                     />
                   </div>
-                  <div className="np-special__read">
-                    <p className="np-kicker np-kicker--paper" data-sc-cue="0.3">
-                      <span className="np-kicker__red">
-                        P. 3 · Known whereabouts
-                      </span>
-                    </p>
-                    <h2 className="np-special__title" data-sc-cue="0.36">
-                      Start with the <em>nearest</em> thing.
-                    </h2>
-                    <p className="np-special__note" data-sc-cue="0.46">
-                      Before the systems and the figures: three roles between
-                      February 2024 and now, every one of them in Baku. The
-                      ledger follows.
-                    </p>
+                  <div className="np-special__col">
+                    <ChalkBoard issues={backIssues} />
+                    <div className="np-special__read">
+                      <p
+                        className="np-kicker np-kicker--paper"
+                        data-sc-cue="0.3"
+                      >
+                        <span className="np-kicker__red">
+                          P. 3 · Known whereabouts
+                        </span>
+                      </p>
+                      <h2 className="np-special__title" data-sc-cue="0.36">
+                        Start with the <em>nearest</em> thing.
+                      </h2>
+                      <p className="np-special__note" data-sc-cue="0.46">
+                        Before the systems and the figures: three roles between
+                        February 2024 and now, every one of them in Baku. The
+                        ledger follows.
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <p className="np-special__cap">
+                <p className="np-special__cap" data-sc-p>
                   <b>Fig. 2.</b> The nearest body, engraved at full phase. Keep
                   scrolling; the plate opens.
                 </p>
@@ -528,7 +537,7 @@ export default function Home() {
 
                 <figure className="np-photo np-photo--hole">
                   <div className="np-hole">
-                    <div className="np-hole__zoom">
+                    <div className="np-hole__zoom" data-sc-p>
                       <img
                         src="/plates/black-hole.webp"
                         width={891}

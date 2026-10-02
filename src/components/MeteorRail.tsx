@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { actProgress, docTop, nearView, onMeasure, viewY } from '@/lib/measure'
 import { BurstCut, MeteorCut, SpecimenIcon } from '@/components/Woodcuts'
 
 /**
@@ -31,15 +32,48 @@ export default function MeteorRail({ bands }: { bands: Band[] }) {
       return
     }
 
+    // Where each card sits is worked out from cached numbers and the act's
+    // progress, the same sum the engine uses to move the rail, so nothing
+    // here measures the page while it is moving.
+    const act = rail.closest<HTMLElement>('[data-sc-act]')
+    if (!act) return
+    const extra = parseFloat(rail.dataset.scPan || '0') || 0
+    let actTop = 0
+    let actH = 0
+    let railW = 0
+    let railLeft = 0
+    let offs: number[] = []
+    let tops: number[] = []
+    const stop = onMeasure(() => {
+      actTop = docTop(act)
+      actH = act.offsetHeight
+      railW = rail.scrollWidth
+      const rr = rail.getBoundingClientRect()
+      const tx = new DOMMatrixReadOnly(getComputedStyle(rail).transform).m41
+      railLeft = rr.left - tx
+      const stageTop = rail.parentElement
+        ? rail.parentElement.getBoundingClientRect().top
+        : rr.top
+      offs = cards.map((c) => c.getBoundingClientRect().left - rr.left)
+      tops = cards.map((c) => c.getBoundingClientRect().top - stageTop)
+    })
+
     const cur = cards.map(() => 0)
     let raf = 0
     const frame = () => {
+      raf = requestAnimationFrame(frame)
+      if (!nearView(actTop, actH)) return
       const vw = innerWidth
       const vh = innerHeight
+      const over = railW - vw
+      const tx = over > 0 ? -(over + over * extra) * actProgress(act) : 0
+      const at = actTop - viewY()
+      const stageTop = Math.min(Math.max(at, 0), at + actH - vh)
       cards.forEach((card, i) => {
-        const r = card.getBoundingClientRect()
-        const fx = clamp01((vw * 0.98 - r.left) / (vw * 0.5))
-        const fy = clamp01((vh * 0.92 - r.top) / (vh * 0.6))
+        const left = railLeft + offs[i] + tx
+        const top = stageTop + tops[i]
+        const fx = clamp01((vw * 0.98 - left) / (vw * 0.5))
+        const fy = clamp01((vh * 0.92 - top) / (vh * 0.6))
         const target = Math.min(fx, fy)
         // eased toward the target, so a fast flick still reads as a fall with
         // weight rather than a card that snaps open
@@ -52,10 +86,12 @@ export default function MeteorRail({ bands }: { bands: Band[] }) {
           card.style.setProperty('--fall', cur[i].toFixed(4))
         }
       })
-      raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
-    return () => cancelAnimationFrame(raf)
+    return () => {
+      cancelAnimationFrame(raf)
+      stop()
+    }
   }, [])
 
   return (
